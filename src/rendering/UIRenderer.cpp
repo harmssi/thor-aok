@@ -14,6 +14,7 @@
 #include "core/Profile.h"
 #include "core/Rules.h"
 #include "core/Strings.h"
+#include "thor/Thor.h"
 #include "ecs/Diplomacy.h"
 #include "ecs/Garrisons.h"
 #include "ecs/Market.h"
@@ -707,6 +708,7 @@ SDL_FRect UIRenderer::MinimapRect(int win_w, int win_h) {
 }
 
 bool UIRenderer::PointOverHud(int win_w, int win_h, int x, int y) {
+    if (Thor::Dual()) return false;
     if (x < 0 || y < 0 || x >= win_w || y >= win_h) return false;
     const HudLayout& layout = Lay(win_w);
     // The art's own pixels decide: the world shows through wherever the frame
@@ -806,6 +808,7 @@ int UIRenderer::TextPercent() {
 }
 
 bool UIRenderer::OverInterface(int win_w, int win_h, int x, int y) {
+    if (Thor::Dual()) return false;
     if (x < 0 || y < 0 || x >= win_w || y >= win_h) return false;
     const int split = HudSplit(LayoutForHeight(win_h));
     const HudSpace top = TopSpace(win_w, win_h);
@@ -2740,6 +2743,7 @@ void DrawPart(SDL_Renderer* sdl_r, const UIRenderer::HudSpace& space, int win_w,
 void UIRenderer::DrawInterface(ECS::Simulation& sim, Renderer& renderer, SDL_Renderer* sdl_r,
                                int win_w, int win_h) {
     SDL_SetRenderDrawBlendMode(sdl_r, SDL_BLENDMODE_BLEND);
+    if (Thor::Dual()) return;   // the deck on the second screen is the interface
     const HudSpace panel = PanelSpace(win_w, win_h);
     DrawPart(sdl_r, panel, win_w, [&] {
         DrawArtPart(sdl_r, sim, panel.w, win_h, false);
@@ -2814,6 +2818,52 @@ void UIRenderer::DrawFPS(SDL_Renderer* sdl_r, int fps, int win_w) {
     const int w = Text::Width(Text::kArial8, text);
     Text::DrawShadowed(sdl_r, Text::kArial8, (win_w - w) / 2, top + 4, text,
                        kWhite, kBlack);
+}
+
+UIRenderer::Inspected UIRenderer::Inspect(ECS::Simulation& sim) {
+    Inspected out;
+    auto& registry = sim.GetRegistry();
+    std::vector<entt::entity> picked;
+    SelectedEntities(registry, picked);
+    out.selected = static_cast<int>(picked.size());
+    const entt::entity selected = InspectedSelection(sim);
+    if (selected == entt::null || !registry.all_of<ECS::Components::Identity>(selected)) return out;
+    const auto* owner_of = registry.try_get<ECS::Components::Owner>(selected);
+    const Core::PlayerId owner = owner_of ? owner_of->player_id : Core::PLAYER_GAIA;
+    const int slot_id = ECS::Villagers::DisplayUnit(registry, selected);
+    const int unit_id = ECS::Players::ArtOf(registry, owner, slot_id);
+    auto& cfg = Core::ConfigManager::Get();
+    const auto* ui = cfg.GetUnitInterface(unit_id);
+    if (ui == nullptr) return out;
+    out.unit_id = unit_id;
+    out.icon_slp = IconSheetFor(unit_id);
+    out.icon_frame = ui->icon;
+    out.name = cfg.GetUnitName(unit_id);
+    if (const auto* health = registry.try_get<ECS::Components::Health>(selected)) {
+        out.hp = health->current_hp;
+        out.max_hp = health->max_hp;
+    }
+    if (const auto* queue = registry.try_get<ECS::Components::ProductionQueue>(selected);
+        queue != nullptr && queue->count > 0 && owner == LocalViewer()) {
+        out.queue_total = ECS::Production::FrontDuration(registry, selected);
+        out.queue_done = queue->progress_ms;
+    }
+    return out;
+}
+
+void UIRenderer::QueueIcon(ECS::Simulation& sim, const QueueSlot& slot, uint32_t& slp, int& frame) {
+    auto& cfg = Core::ConfigManager::Get();
+    slp = 0;
+    frame = -1;
+    if (slot.tech) {
+        if (const auto* tech = Core::Rules::Tech(slot.id)) {
+            slp = cfg.ResearchIconSlp();
+            frame = tech->icon;
+        }
+    } else if (const auto* item = ECS::Players::UnitOf(sim.GetRegistry(), LocalViewer(), slot.id)) {
+        slp = IconSheetFor(slot.id);
+        frame = item->icon;
+    }
 }
 
 } // namespace Rendering

@@ -1,3 +1,4 @@
+#include "thor/Thor.h"
 #include "Renderer.h"
 #include "Text.h"
 #include "FogRenderer.h"
@@ -168,6 +169,7 @@ void Renderer::Render(ECS::Simulation& sim, HAL::Window& window, float alpha) {
     UIRenderer::DrawTimePanels(sim, sdl_r, win_w, win_h);
     UIRenderer::DrawScores(sim, sdl_r, win_w, win_h);
     UIRenderer::DrawInterface(sim, *this, sdl_r, win_w, win_h);
+    Thor::Frame(sim, *this, sdl_r, win_w, win_h);
     // Box-select outline, in window pixels so zoom does not thicken it.
     SDL_Rect sel;
     if (Core::InputManager::Get().GetSelectionRect(sel)) {

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Thor AoK: a keep over two stacked screens, in amber -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- the keep: battlements, walls, gate -->
+    <path android:fillColor="#E8B04A"
+        android:pathData="M36,30h6v5h5v-5h6v5h5v-5h6v14h-2v12h-24v-12h-2z" />
+    <path android:fillColor="#1A1814" android:pathData="M50,48h8v8h-8z" />
+    <!-- the two screens -->
+    <path android:strokeColor="#E8B04A" android:strokeWidth="2.5" android:fillColor="#00000000"
+        android:pathData="M30,60h48v10h-48z" />
+    <path android:strokeColor="#E8B04A" android:strokeWidth="2.5" android:fillColor="#00000000"
+        android:pathData="M33,74h42v9h-42z" />
+    <path android:fillColor="#E8B04A" android:pathData="M37,77h8v3h-8zM49,77h8v3h-8zM61,77h10v3h-10z" />
+</vector>

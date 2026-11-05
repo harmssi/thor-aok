@@ -24,6 +24,9 @@ import org.libsdl.app.SDLActivity;
  */
 public class GameActivity extends SDLActivity implements InputManager.InputDeviceListener {
     private static native void nativeMouseAttached(boolean attached);
+    /** Intent extra: true keeps the whole interface on the top screen, as upstream. */
+    public static final String EXTRA_SINGLE = "single";
+    private ThorScreens screens;
 
     @Override
     protected String[] getLibraries() {
@@ -33,6 +36,18 @@ public class GameActivity extends SDLActivity implements InputManager.InputDevic
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // The AYN Thor: the interface goes to the deck on the second screen
+        // and the map takes the whole top screen (src/thor/Thor.cpp).
+        boolean dual = !getIntent().getBooleanExtra(EXTRA_SINGLE, false) && ThorScreens.hasSecondScreen(this);
+        try {
+            ThorBridge.setDualScreen(dual);
+        } catch (UnsatisfiedLinkError e) {
+            dual = false;
+        }
+        if (dual) {
+            screens = new ThorScreens(this);
+            screens.start();
+        }
         if (Build.VERSION.SDK_INT >= 33) {
             getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
                 OnBackInvokedDispatcher.PRIORITY_DEFAULT, () -> {
@@ -44,6 +59,10 @@ public class GameActivity extends SDLActivity implements InputManager.InputDevic
 
     @Override
     protected void onDestroy() {
+        if (screens != null) {
+            screens.stop();
+            screens = null;
+        }
         super.onDestroy();
         System.exit(0);
     }
@@ -51,6 +70,7 @@ public class GameActivity extends SDLActivity implements InputManager.InputDevic
     @Override
     protected void onResume() {
         super.onResume();
+        if (screens != null) screens.resume();
         inputs().registerInputDeviceListener(this, null);
         reportMouse();
     }
@@ -58,6 +78,7 @@ public class GameActivity extends SDLActivity implements InputManager.InputDevic
     @Override
     protected void onPause() {
         inputs().unregisterInputDeviceListener(this);
+        if (screens != null) screens.pause();
         super.onPause();
     }
 

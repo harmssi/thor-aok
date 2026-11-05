@@ -249,6 +249,24 @@ public:
     // The mini-map's mode: 0 normal, 1 combat, 2 economic.
     static int MinimapMode();
 
+    // What the panel describes, for the Thor's deck (thor/Thor): its name and
+    // icon as the panel shows them, its hit points, how many are selected,
+    // and how far the selected building's first queued item is.
+    struct Inspected {
+        int unit_id = -1;
+        uint32_t icon_slp = 0;
+        int icon_frame = -1;
+        std::string name;
+        int hp = 0;
+        int max_hp = 0;
+        int selected = 0;
+        int queue_done = 0;     // of queue_total, in milliseconds
+        int queue_total = 0;
+    };
+    static Inspected Inspect(ECS::Simulation& sim);
+    // The icon a queue slot shows.
+    static void QueueIcon(ECS::Simulation& sim, const QueueSlot& slot, uint32_t& slp, int& frame);
+
     // A line of help for the lower-left corner, set by whoever knows what the
     // cursor is over in the world; cleared every frame.
     static void SetWorldHint(int string_id);

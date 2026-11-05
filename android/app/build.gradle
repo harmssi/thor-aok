@@ -22,7 +22,8 @@ android {
     ndkVersion '28.2.13676358'
 
     defaultConfig {
-        applicationId 'org.openaok.game'
+        // Thor AoK: its own package, beside an upstream OpenAoK if one is installed.
+        applicationId 'de.harmssi.thoraok'
         minSdk 29
         targetSdk 36
         // Minutes since 1970: a later build always installs over an earlier.

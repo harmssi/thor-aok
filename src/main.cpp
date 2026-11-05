@@ -47,6 +47,7 @@
 #include "core/GameSetup.h"
 #include "core/Hotkeys.h"
 #include "core/InputManager.h"
+#include "thor/Thor.h"
 #include "core/Media.h"
 #include "core/Profile.h"
 #include "core/Rules.h"
@@ -1873,6 +1874,9 @@ int main(int argc, char* argv[]) {
     if (launch.verify_ticks > 0) {
         return Verify::Run(launch.verify_ticks);
     }
+    // THOR_DUAL=1 on a desktop: the top screen as the Thor shows it, with no
+    // interface (the deck itself needs Android's second screen).
+    if (std::getenv("THOR_DUAL") != nullptr) Thor::SetDual(true);
 
     // The menus open at their own 800x600; a game straight from the command
     // line at its own size, and the editor at its.

@@ -58,20 +58,15 @@ public class CopyActivity extends Activity {
         super.onCreate(saved);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         final int installed = installedVersion();
-        if (installed == BuildConfig.DATA_VERSION) {
-            play();
-            return;
-        }
         build();
-        if (installed > 0) {
-            show("This version of OpenAoK plays from newer game data than the copy on this phone. "
-                + "Make the OpenAoK-data folder again with this release's source code, copy it to "
-                + "the phone and choose it.", true);
+        if (installed == BuildConfig.DATA_VERSION) {
+            // Thor AoK's start screen: play, or choose a new data folder.
+            play.setText(getString(R.string.play));
+            show(getString(R.string.launch_ready), true);
+        } else if (installed > 0) {
+            show(getString(R.string.launch_newer), true);
         } else {
-            show("OpenAoK needs the game's data, made from your own Age of Empires II CD on a "
-                + "computer. With the CD copied into original_game_1999/ in OpenAoK's source code, "
-                + "run python3 android/package.py there, copy the OpenAoK-data folder it makes to "
-                + "this phone, then choose that folder. The README has the steps.", false);
+            show(getString(R.string.launch_need), false);
         }
     }
 
@@ -106,14 +101,22 @@ public class CopyActivity extends Activity {
         bar.setMax(1000);
         bar.setVisibility(View.GONE);
         choose = new Button(this);
-        choose.setText("Choose folder");
+        choose.setText(getString(R.string.choose_folder));
         choose.setOnClickListener(v -> {
             Intent pick = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
             startActivityForResult(pick, kChooseFolder);
         });
         play = new Button(this);
-        play.setText("Play anyway");
+        play.setText(getString(R.string.play_anyway));
         play.setOnClickListener(v -> play());
+        TextView title = new TextView(this);
+        title.setText("THOR AoK");
+        title.setTextColor(Color.rgb(232, 176, 74));
+        title.setTextSize(44);
+        title.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        title.setGravity(Gravity.CENTER);
+        title.setPadding(0, 0, 0, 32);
+        layout.addView(title);
         layout.addView(status);
         layout.addView(bar, new LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -145,7 +148,7 @@ public class CopyActivity extends Activity {
         play.setVisibility(View.GONE);
         bar.setVisibility(View.VISIBLE);
         bar.setProgress(0);
-        status.setText("Reading the folder...");
+        status.setText(getString(R.string.reading));
         new Thread(() -> {
             try {
                 install(tree);
@@ -273,7 +276,7 @@ public class CopyActivity extends Activity {
                         final long mb = done >> 20, all = total >> 20;
                         runOnUiThread(() -> {
                             bar.setProgress(permille);
-                            status.setText("Copying the game data...  " + mb + " / " + all + " MB");
+                            status.setText(getString(R.string.copying, mb, all));
                         });
                     }
                 }

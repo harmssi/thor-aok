@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Thor AoK</string>
+    <string name="deck_idle">Starte oben ein Spiel</string>
+    <string name="deck_wood">HOLZ</string>
+    <string name="deck_food">NAHRUNG</string>
+    <string name="deck_gold">GOLD</string>
+    <string name="deck_stone">STEIN</string>
+    <string name="deck_pop">BEV.</string>
+    <string name="deck_nothing">Nichts ausgewählt</string>
+    <string name="deck_idle_villager">Dorfbewohner</string>
+    <string name="deck_idle_military">Militär</string>
+    <string name="deck_idle_caption">UNTÄTIG</string>
+    <string name="deck_town_center">Dorfzentrum</string>
+    <string name="deck_age_up">Nächstes Zeitalter</string>
+    <string name="deck_delete">Löschen</string>
+    <string name="deck_menu">Menü</string>
+    <string name="deck_placing">Oben tippen, um das Gebäude zu setzen</string>
+    <string name="launch_need">Thor AoK spielt mit den Daten von Age of Empires II HD (Steam). Am PC oder Mac den Konverter ausführen (python3 android/package.py --hd &lt;Age2HD-Ordner&gt;), den erzeugten Ordner OpenAoK-data auf dieses Gerät kopieren (SD-Karte geht) und hier auswählen. Die Schritte stehen im README.</string>
+    <string name="launch_newer">Diese Version von Thor AoK braucht neuere Spieldaten als die Kopie auf diesem Gerät. Den Ordner OpenAoK-data mit dieser Version neu erzeugen und auswählen.</string>
+    <string name="launch_ready">Spieldaten gefunden und geprüft. Oben spielt die Karte, unten liegt das Kommando-Deck.</string>
+    <string name="choose_folder">Datenordner wählen</string>
+    <string name="play">Spielen</string>
+    <string name="play_anyway">Trotzdem spielen</string>
+    <string name="reading">Ordner wird gelesen …</string>
+    <string name="copying" formatted="true">Spieldaten werden kopiert …  %1$d / %2$d MB</string>
+</resources>

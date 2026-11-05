@@ -198,6 +198,23 @@ def terrain(textures, dat_terrains, pal):
     return files
 
 
+def music(sound):
+    """HD's music under the CD's names in GAME/SOUND/STREAM (src/audio/Music)."""
+    out = os.path.join(ROOT, 'original_game_1999', 'GAME', 'SOUND', 'STREAM')
+    os.makedirs(out, exist_ok=True)
+    pairs = [('stream/' + n, n.upper()) for n in ('open.mp3', 'credits.mp3', 'won1.mp3', 'lost.mp3')]
+    pairs += [('civ/' + n + '.mp3', n.upper() + '.MP3') for n in (
+        'random', 'british', 'french', 'goth', 'teuton', 'japanese', 'chinese', 'byzantin', 'persian',
+        'saracen', 'turk', 'viking', 'mongol', 'celt')]
+    # The in-game playlist: the 1999 score, then The Conquerors' first tracks.
+    pairs += [('music/music1.mp3', 'MUSIC1.MP3')]
+    pairs += [('music/xmusic%d.mp3' % i, 'MUSIC%d.MP3' % (i + 1)) for i in range(1, 8)]
+    for src, dst in pairs:
+        path = os.path.join(sound, *src.split('/'))
+        if os.path.exists(path):
+            shutil.copyfile(path, os.path.join(out, dst))
+
+
 def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
@@ -230,6 +247,9 @@ def main():
     pal = palette(os.path.join(drs, 'interface', '50500.bina'))
     write_drs(os.path.join(DATA, 'terrain.drs'),
               terrain(os.path.join(common, 'terrain', 'textures'), dat_terrains, pal))
+
+    print('  music')
+    music(os.path.join(common, 'sound'))
 
     os.makedirs(FONTS, exist_ok=True)
     for name in os.listdir(os.path.join(common, 'fonts')):

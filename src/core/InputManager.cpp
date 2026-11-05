@@ -1,4 +1,5 @@
 #include "InputManager.h"
+#include "thor/Thor.h"
 #include "hal/Pad.h"
 #include "hal/Touch.h"
 #include "hal/Window.h"
@@ -1429,6 +1430,8 @@ void InputManager::ProcessEvent(const SDL_Event& event, ECS::Simulation& sim, Re
             int tx = 0, ty = 0, px = 0, py = 0;
             top.ToSpace(mx, my, tx, ty);
             panel.ToSpace(mx, my, px, py);
+            // The interface is on the Thor's deck: nothing of it is here.
+            if (Thor::Dual()) tx = ty = px = py = -100000;
 
             // The top bar's buttons, and those round the mini-map.
             if (const int bar = Rendering::UIRenderer::BarButtonAt(top.w, tx, ty);
@@ -1622,6 +1625,7 @@ void InputManager::ProcessEvent(const SDL_Event& event, ECS::Simulation& sim, Re
                 float gx = 0.0f, gy = 0.0f;
                 int px = 0, py = 0;
                 panel.ToSpace(event.button.x, event.button.y, px, py);
+                if (Thor::Dual()) px = py = -100000;
                 if (px >= well.x && px < well.x + well.w && py >= well.y && py < well.y + well.h &&
                     Rendering::UIRenderer::MinimapUnproject(well, static_cast<float>(px),
                                                             static_cast<float>(py),

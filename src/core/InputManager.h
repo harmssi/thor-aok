@@ -10,6 +10,7 @@ namespace Rendering { class Renderer; }
 namespace Core {
 
 class InputManager {
+    friend struct ThorAccess;   // thor/Thor.cpp: the deck's commands
 public:
     static InputManager& Get() {
         static InputManager instance;

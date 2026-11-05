@@ -1,0 +1,15 @@
+Thor AoK
+========
+
+Thor AoK is a fork of OpenAoK (https://github.com/Zaydme/openaok) by Zaydme
+and the OpenAoK contributors, licensed under the MIT licence (see LICENSE).
+Thor AoK's own changes (the Age of Empires II HD converter, the command deck
+for the AYN Thor's second screen, the Android shell) are released under the
+same MIT licence.
+
+Third-party components keep their own licences; see THIRD_PARTY_NOTICES.md
+and LICENSES/.
+
+No game data is included. Age of Empires is a trademark of Microsoft
+Corporation. This project is not affiliated with, endorsed by or sponsored by
+Microsoft, Ensemble Studios, Forgotten Empires or Valve.

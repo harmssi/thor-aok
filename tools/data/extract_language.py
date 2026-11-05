@@ -148,6 +148,10 @@ def extract_key_value(path):
             if match:
                 text = match.group(2).replace('\\n', '\n').replace('\\"', '"')
                 strings[int(match.group(1))] = text
+    # HD names the civilisations from 10270 (Random) on; the 1999 game from 10230.
+    for i in range(14):
+        if 10230 + i not in strings and 10270 + i in strings:
+            strings[10230 + i] = strings[10270 + i]
     return strings
 
 
