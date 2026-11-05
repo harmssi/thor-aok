@@ -21,6 +21,7 @@ Usage:
 """
 import json
 import os
+import re
 import struct
 import sys
 
@@ -137,12 +138,25 @@ def extract(path):
     return strings
 
 
+def extract_key_value(path):
+    """HD's key-value-strings-utf8.txt: lines of `<id> "<text>"`."""
+    strings = {}
+    line_re = re.compile(r'^(\d+)\s+"(.*)"\s*$')
+    with open(path, encoding='utf-8-sig') as fh:
+        for line in fh:
+            match = line_re.match(line.rstrip('\r\n'))
+            if match:
+                text = match.group(2).replace('\\n', '\n').replace('\\"', '"')
+                strings[int(match.group(1))] = text
+    return strings
+
+
 def main():
     path = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_DLL
     if not os.path.exists(path):
         sys.exit('no such file: %s' % path)
 
-    strings = extract(path)
+    strings = extract_key_value(path) if path.lower().endswith('.txt') else extract(path)
     with open(OUT, 'w', encoding='utf-8', newline='\n') as fh:
         json.dump({str(k): v for k, v in sorted(strings.items())}, fh,
                   ensure_ascii=False, separators=(',', ':'), sort_keys=True)

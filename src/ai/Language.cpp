@@ -115,6 +115,7 @@ const Signature kFacts[] = {
     {"wall-invisible-percentage", {P::Value, P::RelOp, P::Value}, 3},
     {"warboat-count", {P::RelOp, P::Value}, 2},
     {"wood-amount", {P::RelOp, P::Value}, 2},
+    {"up-pending-objects", {P::TypeOp, P::Building, P::RelOp, P::Value}, 4},
 };
 static_assert(sizeof(kFacts) / sizeof(kFacts[0]) == static_cast<size_t>(Fact::COUNT));
 
@@ -225,6 +226,12 @@ const Word kCivs[] = {
     {"teutonic", 4}, {"german", 4},  {"japanese", 5}, {"chinese", 6},  {"byzantine", 7},
     {"persian", 8},  {"saracen", 9}, {"turkish", 10}, {"viking", 11},  {"mongol", 12},
     {"celtic", 13},
+    // The Conquerors' civilisations, in HD's dat; the later ones are in no
+    // dat the engine reads, so a script asking for them is never answered yes.
+    {"spanish", 14}, {"aztec", 15}, {"mayan", 16}, {"hun", 17}, {"korean", 18},
+    {"italian", 99}, {"indian", 99}, {"slavic", 99}, {"magyar", 99}, {"incan", 99},
+    {"berbers", 99}, {"ethiopian", 99}, {"malian", 99}, {"portuguese", 99}, {"burmese", 99},
+    {"khmer", 99}, {"malay", 99}, {"vietnamese", 99},
 };
 
 // Hardest 0 .. easiest 4: the lobby's order, hardest first (LANGUAGE.DLL
@@ -779,6 +786,16 @@ bool FindMapType(std::string_view name, int& out) {
     for (int i = 0; i < kMapTypes; ++i) {
         if (kMapTypeNames[i] == name) {
             out = i;
+            return true;
+        }
+    }
+    // The Conquerors' and HD's maps, which HD's scripts name: never the map.
+    static constexpr std::string_view kLaterMaps[] = {
+        "arena", "ghost-lake", "mongolia", "nomad", "oasis", "salt-marsh", "scandanavia",
+        "yucatan", "king-of-the-hill", "steppe", "budapest", "valley", "atlantic", "cenotes"};
+    for (std::string_view later : kLaterMaps) {
+        if (later == name) {
+            out = -1;
             return true;
         }
     }

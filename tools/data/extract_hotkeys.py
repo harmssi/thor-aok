@@ -101,6 +101,10 @@ def write(defaults):
 
 
 def main():
+    if not os.path.exists(EXE):
+        write([])
+        print('note: no EMPIRES2.EXE (HD data); the game plays without default hotkeys')
+        return
     blob = open(EXE, 'rb').read()
     strings = json.load(open(STRINGS, encoding='utf-8'))
     # The hotkey set-up code, in .text.

@@ -278,6 +278,8 @@ void Setup(entt::registry& registry, const Core::GameSetup& setup) {
         brain.rng = Core::Random((static_cast<uint64_t>(setup.seed) << 8) ^ (0xA1u + seat));
         brain.think_ms = kStaggerMs * seat;
         brain.program = Load(setup, brain.player, brain.rng, read);
+        if (!brain.program.errors.empty() && std::getenv("AOE_AI_ERRORS"))
+            for (const auto& e : brain.program.errors) std::cerr << "[AIERR] " << e << std::endl;
         if (!brain.program.errors.empty()) {
             std::cerr << "[AI] Player " << seat << ": " << brain.program.errors.size()
                       << " script errors, the first: " << brain.program.errors.front() << std::endl;

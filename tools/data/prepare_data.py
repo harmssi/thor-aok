@@ -240,10 +240,38 @@ def run_extractors():
             fail('%s failed' % command[0])
 
 
+def prepare_hd(folder):
+    """Age of Empires II HD (Steam): its loose files laid out as the CD's."""
+    common = os.path.join(folder, 'resources', '_common')
+    dat = os.path.join(common, 'dat', 'empires2_x1_p1.dat')
+    strings = os.path.join(folder, 'resources', 'en', 'strings', 'key-value',
+                           'key-value-strings-utf8.txt')
+    for path in (dat, strings, os.path.join(common, 'drs', 'graphics')):
+        if not os.path.exists(path):
+            fail('%s not found: give the Age2HD folder' % path)
+    os.environ['AOE_DAT_PATH'] = dat
+    os.environ['AOE_DAT_GV'] = 'TC'   # HD's dat is in The Conquerors' format
+    print('Preparing the game data from %s ...' % folder)
+    shutil.rmtree(ORIGINAL, ignore_errors=True)
+    result = subprocess.run([sys.executable, os.path.join(HERE, 'convert_hd.py'), folder])
+    if result.returncode != 0:
+        fail('convert_hd.py failed')
+    extract_palette()
+    for command in EXTRACTORS:
+        if command[0] == 'extract_language.py':
+            command.append(strings)
+    run_extractors()
+    print('Game data ready.')
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     parser.add_argument('--force', action='store_true', help='prepare again even if done')
+    parser.add_argument('--hd', metavar='AGE2HD', help='prepare from Age of Empires II HD instead')
     args = parser.parse_args()
+    if args.hd:
+        prepare_hd(args.hd)
+        return
 
     check_cd()
     if prepared() and not args.force:

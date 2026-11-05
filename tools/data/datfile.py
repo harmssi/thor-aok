@@ -12,7 +12,8 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-EMPIRES2_DAT = os.path.join(ROOT, 'original_game_1999', 'GAME', 'DATA', 'EMPIRES2.DAT')
+# AOE_DAT_PATH (with AOE_DAT_GV for dump_dat) reads another dat: HD's, from prepare_data.py --hd.
+EMPIRES2_DAT = os.environ.get('AOE_DAT_PATH') or os.path.join(ROOT, 'original_game_1999', 'GAME', 'DATA', 'EMPIRES2.DAT')
 BUILD_DIR = os.path.join(ROOT, 'build', 'data-tools')
 DUMPER = os.path.join(BUILD_DIR, 'dump_dat.exe' if os.name == 'nt' else 'dump_dat')
 

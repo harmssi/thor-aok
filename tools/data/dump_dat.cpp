@@ -1,3 +1,4 @@
+#include <cstdlib>
 // Prints the tables the data extractors need from EMPIRES2.DAT as JSON on
 // stdout: terrains, units, rules, technologies, effects, graphics, sounds and
 // the tech tree.
@@ -552,7 +553,15 @@ int main(int argc, char** argv) {
     }
 
     genie::DatFile dat;
-    dat.setGameVersion(genie::GV_AoK);
+    // AOE_DAT_GV picks another genieutils version (HD's dat: TC or Cysion).
+    genie::GameVersion version = genie::GV_AoK;
+    if (const char* gv = std::getenv("AOE_DAT_GV")) {
+        const std::string name = gv;
+        if (name == "TC") version = genie::GV_TC;
+        else if (name == "Cysion") version = genie::GV_Cysion;
+        else if (name == "C2") version = genie::GV_C2;
+    }
+    dat.setGameVersion(version);
     try {
         dat.load(argv[1]);
     } catch (const std::exception& error) {
@@ -577,6 +586,8 @@ int main(int argc, char** argv) {
         std::printf("    \"%zu\": {", id);
         std::printf("\"name\": ");
         PrintJsonString(terrain.Name);
+        std::printf(", \"file\": ");
+        PrintJsonString(terrain.Name2);
         std::printf(", \"slp\": %d", terrain.SLP);
         std::printf(", \"sound\": %d", terrain.SoundID);
         std::printf(", \"minimap\": [%u, %u, %u]",

@@ -133,6 +133,9 @@ struct Compiler {
         case Param::Value:
             if (value()) return true;
             break;
+        case Param::TypeOp:
+            if (w == "c:") { out = 0; return true; }
+            break;
         case Param::RelOp: {
             RelOp op{};
             if (FindRelOp(w, op)) {

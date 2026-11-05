@@ -522,6 +522,9 @@ bool Test(Turn& turn, const Script::Expr& e) {
         return world != nullptr && Compare(Count(turn, world->all[turn.player].buildings, a[0]), a[1], a[2]);
     case Fact::BuildingTypeCountTotal:
         return world != nullptr && Compare(Count(turn, world->all[turn.player].buildings_total, a[0]), a[1], a[2]);
+    case Fact::UpPendingObjects:   // foundations not yet finished
+        return world != nullptr && Compare(Count(turn, world->all[turn.player].buildings_total, a[1]) -
+                                               Count(turn, world->all[turn.player].buildings, a[1]), a[2], a[3]);
 
     case Fact::UnitAvailable:       return UnitCheck(turn, a[0], Check::Available, false);
     case Fact::CanAffordUnit:       return UnitCheck(turn, a[0], Check::Afford, false);

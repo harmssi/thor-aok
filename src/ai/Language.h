@@ -38,6 +38,7 @@ enum class Param : uint8_t {
     DifficultyParameter,
     VictoryCondition,
     EventType,
+    TypeOp,             // UserPatch's c: (the next argument is a constant)
     None,
 };
 
@@ -71,6 +72,7 @@ enum class Fact : uint16_t {
     StoneAmount, StrategicNumber, TauntDetected, TimerTriggered, TownUnderAttack, UnitAvailable,
     UnitCount, UnitCountTotal, UnitTypeCount, UnitTypeCountTotal, VictoryCondition,
     WallCompletedPercentage, WallInvisiblePercentage, WarboatCount, WoodAmount,
+    UpPendingObjects,   // UserPatch, which HD's scripts use
     COUNT
 };
 
