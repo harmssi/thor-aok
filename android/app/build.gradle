@@ -72,7 +72,8 @@ android {
     externalNativeBuild {
         cmake {
             path 'jni/CMakeLists.txt'
-            version '3.31.6'
+            // OPENAOK_CMAKE: another CMake (named by cmake.dir in local.properties).
+            version(System.getenv('OPENAOK_CMAKE') ?: '3.31.6')
         }
     }
 

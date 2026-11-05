@@ -30,9 +30,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--out', default=os.path.join(HERE, 'build'),
                         help='where to write OpenAoK-data/')
+    parser.add_argument('--hd', metavar='AGE2HD', help='from Age of Empires II HD instead of the CD')
     args = parser.parse_args()
 
-    package_data.prepare()
+    package_data.prepare(['--hd', args.hd] if args.hd else [])
     folder = os.path.join(args.out, 'OpenAoK-data')
     packer = package_data.Packer()
     packer.lay_out(folder)

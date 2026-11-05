@@ -117,7 +117,7 @@ def gamedata(src):
     # engine knows them by the 1999 names.
     for i, name in enumerate(AI_FILES):
         data = text.get('elite %s.per' % name, text.get('%s.per' % name, b''))
-        files[FIRST_AI + i] = ('per', re.sub(rb'\(load "elite ', b'(load "', data))
+        files[FIRST_AI + i] = ('per', data.replace(b'"elite ', b'"'))
     return files
 
 

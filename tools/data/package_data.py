@@ -124,9 +124,10 @@ def checksum(path):
     return crc & 0xffffffff
 
 
-def prepare():
-    """Prepares the game's data from original_game_1999/, as build.sh does."""
-    if subprocess.call([sys.executable, os.path.join(HERE, 'prepare_data.py')]) != 0:
+def prepare(extra=()):
+    """Prepares the game's data from original_game_1999/, as build.sh does
+    (`extra`: prepare_data.py's options, such as --hd)."""
+    if subprocess.call([sys.executable, os.path.join(HERE, 'prepare_data.py')] + list(extra)) != 0:
         sys.exit(1)
 
 
