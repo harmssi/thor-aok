@@ -4,9 +4,11 @@
 
 > Not affiliated with, endorsed by or sponsored by Microsoft. No game data included: you need your own copy of **Age of Empires II HD** (Steam).
 
+All Thor ports: [toravo.de/en/thor](https://toravo.de/en/thor/) · Made a video about this? Open an issue and I'll link it here.
+
 ## Quick start
 
-1. **Install the APK.** Download `ThorAoK-v0.1.0.apk` from [Releases](../../releases) on the Thor and install it (allow installing from your browser or file manager once).
+1. **Install the APK.** Download `ThorAoK-0.1.0.apk` from [Releases](../../releases) on the Thor and install it (allow installing from your browser or file manager once).
 2. **Install Age of Empires II HD** from your Steam library on a PC or Mac (or on the Thor through a Steam client such as DroiDeck: the files are what matters).
 3. **Convert the data on a PC or Mac** (Python 3, CMake and a C++ compiler; Pillow and NumPy for the terrain):
    ```sh
@@ -49,7 +51,7 @@ The game plays The Age of Kings' rules from The Conquerors' data: the 13 origina
 |---|---|
 | **Dual screen** | An Android `Presentation` on display 4 (`FLAG_NOT_FOCUSABLE`). Without a second screen, or with the intent extra `single=true`, the original interface stays on the top screen. |
 | **Engine-faithful** | Every deck action goes through the engine's own panel code (`src/thor/Thor.cpp`): a tile runs the command button's click, the mini-map centres the view like a mini-map click, the menu is the top bar's menu button. |
-| **Commands** | Tap a tile = press the button (train, research, build menu, stop, bell, …). Long-press = the button's help. Placing a building: pick it on the deck, then tap the spot on the top screen. |
+| **Commands** | Tap a tile = press the button (train, research, build menu, stop, bell, …). Long-press = the button's help. Placing a building: pick it on the deck, then tap the spot on the top screen. **Delete** asks first: tap it again within 3 seconds. |
 | **Mini-map** | Drawn by the engine's mini-map code (terrain, fog, units) with the view frame. |
 | **Languages** | Deck and launcher in English, Deutsch, Español, Français. The game's own text comes from your HD files (English). |
 

@@ -14,6 +14,7 @@
     <string name="deck_town_center">Dorfzentrum</string>
     <string name="deck_age_up">Nächstes Zeitalter</string>
     <string name="deck_delete">Löschen</string>
+    <string name="deck_delete_confirm">Sicher? Nochmal tippen</string>
     <string name="deck_menu">Menü</string>
     <string name="deck_placing">Oben tippen, um das Gebäude zu setzen</string>
     <string name="launch_need">Thor AoK spielt mit den Daten von Age of Empires II HD (Steam). Am PC oder Mac den Konverter ausführen (python3 android/package.py --hd &lt;Age2HD-Ordner&gt;), den erzeugten Ordner OpenAoK-data auf dieses Gerät kopieren (SD-Karte geht) und hier auswählen. Die Schritte stehen im README.</string>

@@ -61,6 +61,9 @@ public class ThorDeck extends View {
     private long pressedAt;
     private boolean held, mapDrag;
     private long lastMapPush;
+    // Delete asks first: the first tap arms it, a second within CONFIRM_MS deletes.
+    private static final long CONFIRM_MS = 3000;
+    private long deleteArmedUntil;
 
     // Layout, on the 1240x1080 grid
     private float s = 1f;
@@ -400,11 +403,16 @@ public class ThorDeck extends View {
         for (int i = 0; i < buttons.length; i++) {
             RectF r = buttons[i];
             boolean down = pressedButton == i;
-            panel(c, r, down ? PANEL_HI : PANEL);
+            boolean armed = i == 4 && SystemClock.uptimeMillis() < deleteArmedUntil;
+            panel(c, r, armed ? 0xFF7A2418 : down ? PANEL_HI : PANEL);
             int color = i == 3 ? (ageRunning ? GREEN : AMBER) : TEXT;
-            if (i == 4) color = RED;
+            if (i == 4) color = armed ? TEXT : RED;
             String t = buttonLabel(i);
-            if (i <= 1) {
+            if (armed) {
+                label(c, getContext().getString(R.string.deck_delete_confirm).toUpperCase(), r.centerX(), r.top + 30, 16,
+                        TEXT, Paint.Align.CENTER, true);
+                label(c, t, r.centerX(), r.top + 66, 26, color, Paint.Align.CENTER, true);
+            } else if (i <= 1) {
                 label(c, getContext().getString(R.string.deck_idle_caption).toUpperCase(), r.centerX(), r.top + 30, 18, DIM,
                         Paint.Align.CENTER, false);
                 label(c, TextUtils.ellipsize(t, measure(26), r.width() - 16, TextUtils.TruncateAt.END).toString(),
@@ -499,7 +507,13 @@ public class ThorDeck extends View {
                     performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
                     int[] cmd = {ThorBridge.CMD_IDLE_VILLAGER, ThorBridge.CMD_IDLE_MILITARY, ThorBridge.CMD_TOWN_CENTER,
                             ThorBridge.CMD_AGE_UP, ThorBridge.CMD_DELETE, ThorBridge.CMD_MENU};
-                    ThorBridge.push(cmd[pressedButton], 0, 0);
+                    long now = SystemClock.uptimeMillis();
+                    if (pressedButton == 4 && now >= deleteArmedUntil) {
+                        deleteArmedUntil = now + CONFIRM_MS;
+                    } else {
+                        if (pressedButton == 4) deleteArmedUntil = 0;
+                        ThorBridge.push(cmd[pressedButton], 0, 0);
+                    }
                 } else {
                     for (int i = 0; i < 15; i++) {
                         if (!queueRects[i].isEmpty() && queueRects[i].contains(x, y)) {
