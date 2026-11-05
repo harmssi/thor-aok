@@ -4,7 +4,7 @@
 
 > Not affiliated with, endorsed by or sponsored by Microsoft. No game data included: you need your own copy of **Age of Empires II HD** (Steam).
 
-▶ **[Showcase video](https://youtu.be/a84hUf1OQok)** · **[30-second short](https://youtube.com/shorts/LNoEQ6FEUD0)**
+▶ **[Watch the install guide](https://youtu.be/cT8PKuzvq-g)** · **[Showcase video](https://youtu.be/a84hUf1OQok)** · **[30-second short](https://youtube.com/shorts/LNoEQ6FEUD0)**
 
 All Thor ports: [toravo.de/en/thor](https://toravo.de/en/thor/) · Made a video about this? Open an issue and I'll link it here.
 
