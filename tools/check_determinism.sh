@@ -92,6 +92,7 @@ OBJECTART="$(echo "$OUTPUT" | grep '^objectart=')"
 STUMPS="$(echo "$OUTPUT" | grep '^stumps=')"
 TCGROUND="$(echo "$OUTPUT" | grep '^tcground=')"
 HAWKS="$(echo "$OUTPUT" | grep '^hawks=')"
+CARCASS="$(echo "$OUTPUT" | grep '^carcass=')"
 COLOURS="$(echo "$OUTPUT" | grep '^colours=')"
 BUTTONS="$(echo "$OUTPUT" | grep '^buttons=')"
 SEARCH="$(echo "$OUTPUT" | grep '^search=')"
@@ -651,6 +652,12 @@ esac
 case "$HAWKS" in
     hawks=ok*) echo "hawks OK" ;;
     *) echo "HAWKS FAILED" >&2; echo "  $HAWKS" >&2; STATUS=1 ;;
+esac
+
+# A boar's carcass is shown as the boar it was, with the food it holds.
+case "$CARCASS" in
+    carcass=ok*) echo "carcass OK" ;;
+    *) echo "CARCASS FAILED" >&2; echo "  $CARCASS" >&2; STATUS=1 ;;
 esac
 
 # Villagers sent at a sheep kill it, take its food within the dat's range and

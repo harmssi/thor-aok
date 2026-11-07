@@ -771,6 +771,7 @@ void UIRenderer::ShowAdvancedCommands() { HudState().advanced = true; }
 bool UIRenderer::HelpShown() { return HudState().help; }
 int UIRenderer::MinimapMode() { return HudState().minimap_mode; }
 void UIRenderer::SetWorldHint(int string_id) { HudState().world_hint = string_id; }
+int UIRenderer::WorldHint() { return HudState().world_hint; }
 void UIRenderer::ToggleClock() { HudState().clock = !HudState().clock; }
 // The world between the bar and the panel, in the frame, at their sizes.
 SDL_Rect UIRenderer::ViewRect(int win_w, int win_h) {
@@ -2186,6 +2187,12 @@ bool UIRenderer::ShowsGarrison(const entt::registry& registry, entt::entity sele
            ECS::Garrisons::Capacity(registry, selected) > 0;
 }
 
+int UIRenderer::PanelUnit(const entt::registry& registry, entt::entity selected) {
+    const auto* carcass = registry.try_get<ECS::Components::Corpse>(selected);
+    if (carcass != nullptr && carcass->was >= 0) return carcass->was;
+    return ECS::Villagers::DisplayUnit(registry, selected);
+}
+
 std::string UIRenderer::PlayerName(const entt::registry& registry, Core::PlayerId id) {
     return Rendering::PlayerName(registry, id);
 }
@@ -2326,13 +2333,14 @@ void DrawUnitPanel(SDL_Renderer* sdl_r, ECS::Simulation& sim, int win_w, int win
     const HudLayout& layout = Lay(win_w);
     // A villager at work is a different dat unit with its own name and icon --
     // a lumberjack, a miner, a builder -- while the entity keeps its identity
-    // as a plain villager. The job module owns that resolution.
+    // as a plain villager. The job module owns that resolution. A carcass
+    // still holding food is the animal it was, with the food left.
     //
     // An upgraded unit shows what it has become: the owner's slot for a
     // militia holds a Man-at-Arms after the upgrade, name, icon and all.
     const auto* owner_of = registry.try_get<ECS::Components::Owner>(selected);
     const Core::PlayerId owner = owner_of ? owner_of->player_id : Core::PLAYER_GAIA;
-    const int slot_id = ECS::Villagers::DisplayUnit(registry, selected);
+    const int slot_id = UIRenderer::PanelUnit(registry, selected);
     const int unit_id = ECS::Players::ArtOf(registry, owner, slot_id);
     const auto* ui = cfg.GetUnitInterface(unit_id);
     if (!ui) return;

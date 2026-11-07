@@ -17,6 +17,9 @@ struct Corpse {
     int32_t remaining_ms = 0;          // a body: until it disappears
     Core::Fixed32 rot_per_second{};    // a carcass: food lost each second
     Core::Fixed32 rot{};               // carried fraction of food not yet lost
+    // A carcass: the animal it was, as the original keeps it while it holds
+    // food -- what the panel names and shows (-1: a body).
+    int was = -1;
 };
 
 } // namespace ECS::Components

@@ -16,6 +16,7 @@
 #include "ecs/Buildings.h"
 #include "core/IsometricMath.h"
 #include "core/CommandQueue.h"
+#include "ecs/components/Mortal.h"
 #include "ecs/components/Transform.h"
 #include "ecs/components/Selectable.h"
 #include "ecs/components/Resource.h"
@@ -900,6 +901,20 @@ void InputManager::UpdateIntent(ECS::Simulation& sim, Rendering::Renderer& rende
         if (monks) {
             intent = Intent::Monk;
             Rendering::UIRenderer::SetWorldHint(3922);
+        }
+        return;
+    }
+    // A carcass still holding food is the animal it was: villagers hunt it,
+    // or, a sheep's, shepherd it.
+    if (const auto* carcass = registry.try_get<ECS::Components::Corpse>(nearest);
+        carcass != nullptr && carcass->was >= 0 && resource != nullptr) {
+        const Core::Rules::UnitRules* was = Core::Rules::Unit(carcass->was);
+        const bool sheep = was != nullptr && was->cls == kSheepClass;
+        if (villagers) {
+            intent = Intent::Work;
+            Rendering::UIRenderer::SetWorldHint(sheep ? 3929 : 3910);
+        } else if (!anyone) {
+            Rendering::UIRenderer::SetWorldHint(sheep ? 3829 : 3826);
         }
         return;
     }

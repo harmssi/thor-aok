@@ -92,6 +92,7 @@ void LayDown(entt::registry& registry, entt::entity dead) {
                 Components::Selectable{.is_selected = false, .radius = 1, .priority = 0});
             corpse.rot_per_second = rules->decay;
             corpse.remaining_ms = 0;
+            corpse.was = identity->unit_id;
             // Whoever was after the animal goes on to the carcass.
             auto workers = registry.view<Components::Worker>();
             for (auto worker : workers) {

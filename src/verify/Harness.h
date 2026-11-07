@@ -378,6 +378,9 @@ bool CheckTownCenterGround();
 // A new map's hawks fly about it, drawn up at their height, flapping and
 // gliding by turns. Prints "hawks=".
 bool CheckHawks();
+// A boar's carcass is shown in the info panel as the boar it was, with its
+// food. Prints "carcass=".
+bool CheckCarcassPanel();
 // A computer player's scout set on two wolves in its town: every swing it
 // begins at one wounds it. Prints "wolves=".
 bool CheckWolves();

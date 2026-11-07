@@ -128,6 +128,7 @@ int Run(int ticks) {
     if (runs("stumps")) ok &= CheckStumps();
     if (runs("tcground")) ok &= CheckTownCenterGround();
     if (runs("hawks")) ok &= CheckHawks();
+    if (runs("carcass")) ok &= CheckCarcassPanel();
     if (runs("wolves")) ok &= CheckWolves();
     if (runs("lobby")) ok &= CheckLobby();
     if (runs("formations")) ok &= CheckFormations();

@@ -515,7 +515,10 @@ scout to find it, and an unguarded one changes hands when an enemy comes by.
 Prey struck by anyone runs (`Animals::Flee`): three times its line of sight
 straight away from the attacker, and where it fled to is its home from then on.
 A villager sent at a deer walks out as a hunter, sets its combat on the deer,
-kills it, and gathers from the carcass. A boar struck by its hunter turns on
+kills it, and gathers from the carcass. A carcass still holding food is the
+animal it was, as the original keeps it: the info panel names it and shows its
+icon and the food left (`UIRenderer::PanelUnit`, from the `Corpse`'s `was`),
+and the pointer over it gives the animal's hints, a sheep's the sheep's. A boar struck by its hunter turns on
 it, and a villager hunting a boar keeps at it when struck back. A wolf looks
 for villagers on its own slower clock, by difficulty (see
 [choosing a target](/engine/combat#choosing-a-target)). A shepherd kills its
