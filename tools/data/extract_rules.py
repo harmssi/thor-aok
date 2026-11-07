@@ -148,10 +148,12 @@ def main():
     # The ground a building claims, and the annex units it is assembled from
     # -- a gate's two posts -- as the dat's object table has them. The
     # clearance is a half-extent per axis; a gate is four tiles one way and
-    # one the other.
+    # one the other. The obstruction type says whether units pass it: 0 for a
+    # Town Center, whose back piece alone blocks.
     for k, unit in units.items():
         obj = dat['units'].get(k, {})
         unit['clearance'] = obj.get('clearance', [0.0, 0.0])
+        unit['obstruction'] = obj.get('obstruction', 2)
         unit['annexes'] = [[a['unit'], a['dx'], a['dy']] for a in obj.get('annexes', [])]
     techs = {k: tech_rules(v, strings) for k, v in dat['techs'].items()}
     effects = {k: {'name': v['name'], 'commands': v['commands']}

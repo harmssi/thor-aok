@@ -90,6 +90,7 @@ ANSWERDRAFT="$(echo "$OUTPUT" | grep '^answerdraft=')"
 DROPOFFBEYOND="$(echo "$OUTPUT" | grep '^dropoffbeyond=')"
 OBJECTART="$(echo "$OUTPUT" | grep '^objectart=')"
 STUMPS="$(echo "$OUTPUT" | grep '^stumps=')"
+TCGROUND="$(echo "$OUTPUT" | grep '^tcground=')"
 COLOURS="$(echo "$OUTPUT" | grep '^colours=')"
 BUTTONS="$(echo "$OUTPUT" | grep '^buttons=')"
 SEARCH="$(echo "$OUTPUT" | grep '^search=')"
@@ -636,6 +637,13 @@ esac
 case "$STUMPS" in
     stumps=ok*) echo "stumps OK" ;;
     *) echo "STUMPS FAILED" >&2; echo "  $STUMPS" >&2; STATUS=1 ;;
+esac
+
+# A Town Center keeps units off its back alone; its open ground is walked, not
+# built on.
+case "$TCGROUND" in
+    tcground=ok*) echo "tcground OK" ;;
+    *) echo "TCGROUND FAILED" >&2; echo "  $TCGROUND" >&2; STATUS=1 ;;
 esac
 
 # Villagers sent at a sheep kill it, take its food within the dat's range and

@@ -91,6 +91,7 @@ void ReadUnit(const nlohmann::json& v, UnitRules& u, UnitText& text) {
     u.hill_mode = Int(v, "hill_mode", 0);
     u.fog_visibility = Int(v, "fog_visibility", 0);
     u.interaction = Int(v, "interaction", 0);
+    u.obstruction = Int(v, "obstruction", kSolidGround);
     u.combat_level = Int(v, "combat_level", 0);
     u.minimap_mode = Int(v, "minimap_mode", 0);
     u.carry = Int(v, "carry", 0);

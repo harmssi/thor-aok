@@ -77,7 +77,7 @@ bool OpenGround(const Physics::Grid& grid, int x, int y, int half, int& out_x, i
                 bool clear = true;
                 for (int oy = -half; oy <= half && clear; ++oy) {
                     for (int ox = -half; ox <= half && clear; ++ox) {
-                        clear = grid.IsWalkable(x + dx + ox, y + dy + oy);
+                        clear = grid.IsWalkable(x + dx + ox, y + dy + oy) && !grid.IsBlocked(x + dx + ox, y + dy + oy);
                     }
                 }
                 if (clear) {

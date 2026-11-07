@@ -97,7 +97,7 @@ bool CheckApproachPlanner();
 // Prints "building=".
 bool CheckConstruction();
 
-// A Town Centre trains villagers: price, refusals, the step out of the door,
+// A Town Center trains villagers: price, refusals, the step out of the door,
 // the population limit, and cancelling. Prints "production=".
 bool CheckProduction();
 
@@ -372,6 +372,9 @@ bool CheckObjectArt();
 // A used-up tree's stump lies for the dat's decay time, its tile open.
 // Prints "stumps=".
 bool CheckStumps();
+// A Town Center keeps units off its back alone; a villager sent onto the
+// rest gets there, and nothing is built on any of it. Prints "tcground=".
+bool CheckTownCenterGround();
 // A computer player's scout set on two wolves in its town: every swing it
 // begins at one wounds it. Prints "wolves=".
 bool CheckWolves();

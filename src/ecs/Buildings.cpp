@@ -440,17 +440,34 @@ bool SameSide(const entt::registry& registry, Core::PlayerId a, Core::PlayerId b
     return a == b || Diplomacy::Allied(registry, a, b);
 }
 
-// A building takes its ground: its footprint blocked -- a farm's stays open --
-// and whoever stands on it stepping off.
+// A building takes its ground: nothing else is built on its footprint, and
+// units are kept off it -- off all of it, or, where the dat gives the
+// building no obstruction (a Town Center), off the pieces of it that have one
+// (its back). Whoever stands where units are kept off steps off.
 void Hold(entt::registry& registry, Physics::Grid& grid, entt::entity building) {
     auto& state = registry.get<Components::Building>(building);
     const int unit_id = registry.get<Components::Identity>(building).unit_id;
     const auto origin = registry.get<Components::Transform>(building).position;
     if (!registry.all_of<Components::Resource>(building)) {
-        ForEachFootprintTile(unit_id, Physics::TileOf(origin.x), Physics::TileOf(origin.y), [&](int x, int y) {
-            grid.SetWalkable(x, y, false);
-        });
-        StepAside(registry, grid, FootprintBounds(origin, unit_id));
+        const R::UnitRules* rules = R::Unit(unit_id);
+        if (rules == nullptr || rules->obstruction != R::kOpenGround) {
+            ForEachFootprintTile(unit_id, Physics::TileOf(origin.x), Physics::TileOf(origin.y),
+                                 [&](int x, int y) { grid.SetWalkable(x, y, false); });
+            StepAside(registry, grid, FootprintBounds(origin, unit_id));
+        } else {
+            ForEachFootprintTile(unit_id, Physics::TileOf(origin.x), Physics::TileOf(origin.y),
+                                 [&](int x, int y) { grid.SetWalkThrough(x, y); });
+            for (int i = 0; i < rules->annex_count; ++i) {
+                const R::Annex& annex = rules->annexes[i];
+                const R::UnitRules* piece = R::Unit(annex.unit);
+                if (piece == nullptr || piece->obstruction == R::kOpenGround) continue;
+                const Components::Vector2D off = FromDatAxes(annex.dx, annex.dy);
+                const Components::Vector2D at{origin.x + off.x, origin.y + off.y};
+                ForEachFootprintTile(annex.unit, Physics::TileOf(at.x), Physics::TileOf(at.y),
+                                     [&](int x, int y) { grid.SetWalkable(x, y, false); });
+                StepAside(registry, grid, FootprintBounds(at, annex.unit));
+            }
+        }
     }
     state.begun = true;
 }
