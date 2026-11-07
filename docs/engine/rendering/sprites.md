@@ -427,6 +427,10 @@ other sprite.
 
 The original computes no shadows. Trees, buildings and missiles each have a
 separate shadow graphic, an SLP whose frames are made of shadow pixels alone.
+A few graphics hold shadow pixels beside their art in their own frames (a
+flag) and are their own shadow graphic. Units, the dead and stumps have no
+shadow pixels: their shadows are painted into their art in black, and are
+drawn as such, opaque, as in the original.
 `tools/data/extract_slp_shadows.py` finds them while the data is prepared: it
 marks every SLP in `graphics.drs` that holds shadow pixels, then matches each
 graphic to the shadow graphic whose name is its own with the part marker (an
@@ -443,8 +447,11 @@ two separate pieces.
 
 Shadows are drawn black from the shadow pages, in a pass of their own before
 any sprite, each at an alpha of 110, so one piece's shadow never lands on
-another piece drawn at the same depth. A graphic with no shadow graphic casts
-no shadow.
+another piece drawn at the same depth; a graphic that is its own shadow casts
+it mirrored with its frame. A composite's piece made of shadow pixels alone (a
+hawk's shadow, a tree's placed by a scenario) is drawn in the same pass, on
+the ground under a lifted sprite. A graphic with no shadow graphic casts no
+shadow.
 
 ## Where it lives in the code
 

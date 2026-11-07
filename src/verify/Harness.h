@@ -382,6 +382,9 @@ bool CheckBuildOverStump();
 // A tree placed as a scenario places it, felled, draws as the felled trunk.
 // Prints "felledplaced=".
 bool CheckFelledPlaced();
+// Stumps and bodies are drawn on the ground, under who walks there; villagers
+// and trees stand. Prints "groundlayer=".
+bool CheckGroundLayer();
 // A Town Center keeps units off its back alone; a villager sent onto the
 // rest gets there, and nothing is built on any of it. Prints "tcground=".
 bool CheckTownCenterGround();

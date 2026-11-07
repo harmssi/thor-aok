@@ -246,8 +246,9 @@ the fog's tiles under the view are drawn.
 
 ## Two passes either side of the fog
 
-The dat gives every graphic a layer. Whatever is drawn only on layer 5 or
-under lies on the ground: farms, rubble, cliffs and most shadows. OpenAoK
+The dat gives every graphic a layer. Whatever is drawn only on layer 10 or
+under lies on the ground, under whatever stands or walks there: farms, rubble,
+cliffs, foundations, stumps, the dead and the shadow graphics. OpenAoK
 reads this once into a table by SLP (`GroundLevel`; an SLP any graphic uses on
 a higher layer counts as standing).
 

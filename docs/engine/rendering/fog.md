@@ -223,8 +223,8 @@ not to the tiles.
 Objects are drawn either side of the fog (see
 [The frame](/engine/rendering/#two-passes-either-side-of-the-fog)):
 
-- Whatever the dat draws on layer 5 or under (farms, rubble, cliffs and most
-  shadows) is drawn before the fog, so it is fogged exactly as the ground under
+- Whatever the dat draws on layer 10 or under (farms, rubble, cliffs,
+  foundations, stumps, the dead and the shadow graphics) is drawn before the fog, so it is fogged exactly as the ground under
   it: clear, dithered, or not at all where the ground is black.
 - Everything else is drawn whole, over the fogged ground: clear if its tile is
   seen, even where it reaches over fog or black, so a tree at the edge of sight

@@ -93,6 +93,7 @@ STUMPS="$(echo "$OUTPUT" | grep '^stumps=')"
 FORESTS="$(echo "$OUTPUT" | grep '^forests=')"
 BUILDSTUMP="$(echo "$OUTPUT" | grep '^buildstump=')"
 FELLEDPLACED="$(echo "$OUTPUT" | grep '^felledplaced=')"
+GROUNDLAYER="$(echo "$OUTPUT" | grep '^groundlayer=')"
 TCGROUND="$(echo "$OUTPUT" | grep '^tcground=')"
 HAWKS="$(echo "$OUTPUT" | grep '^hawks=')"
 CARCASS="$(echo "$OUTPUT" | grep '^carcass=')"
@@ -662,6 +663,12 @@ esac
 case "$FELLEDPLACED" in
     felledplaced=ok*) echo "felledplaced OK" ;;
     *) echo "FELLEDPLACED FAILED" >&2; echo "  $FELLEDPLACED" >&2; STATUS=1 ;;
+esac
+
+# Stumps and bodies lie on the ground, under who walks there.
+case "$GROUNDLAYER" in
+    groundlayer=ok*) echo "groundlayer OK" ;;
+    *) echo "GROUNDLAYER FAILED" >&2; echo "  $GROUNDLAYER" >&2; STATUS=1 ;;
 esac
 
 # A Town Center keeps units off its back alone; its open ground is walked, not

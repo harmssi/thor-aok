@@ -49,6 +49,9 @@ public:
     // How many silhouettes the last frame drew: what has outline pixels in
     // its art, standing hidden behind something.
     static int OutlinesDrawn();
+    // Whether the SLP is drawn on the ground, under whatever stands there:
+    // every graphic using it is on the dat's ground layers.
+    static bool OnGround(int slp_id);
 
     // How far a building's art stands from its origin tile, in world units:
     // a building is drawn about its footprint's middle, which for an even
