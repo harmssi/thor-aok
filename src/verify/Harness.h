@@ -388,6 +388,10 @@ bool CheckHawks();
 // A boar's carcass is shown in the info panel as the boar it was, with its
 // food. Prints "carcass=".
 bool CheckCarcassPanel();
+// A boar's carcass lies as the boar fell while it holds food, then leaves its
+// remains, rotting, for the dat's decay time; a sheep's leaves none.
+// Prints "carcassart=".
+bool CheckCarcassArt();
 // A computer player's scout set on two wolves in its town: every swing it
 // begins at one wounds it. Prints "wolves=".
 bool CheckWolves();

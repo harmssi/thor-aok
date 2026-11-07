@@ -15,6 +15,7 @@ struct Dying {
 // it is gone.
 struct Corpse {
     int32_t remaining_ms = 0;          // a body: until it disappears
+    int32_t lies_ms = 0;               // a body: how long it lies in all, as it rots
     Core::Fixed32 rot_per_second{};    // a carcass: food lost each second
     Core::Fixed32 rot{};               // carried fraction of food not yet lost
     // A carcass: the animal it was, as the original keeps it while it holds

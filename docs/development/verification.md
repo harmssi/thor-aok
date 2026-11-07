@@ -96,6 +96,7 @@ the gate reads. The names below are those the gate prints.
 | `tcground` | A Town Center keeps units off its back, the one piece the dat gives an obstruction; a villager sent onto the rest of its footprint gets there, and nothing else is built on any of it |
 | `hawks` | A new map's hawks fly about it, covering ground at the dat's speed, drawn up at their height, flapping and gliding by turns, never leaving the map |
 | `carcass` | A wild boar killed lies as a carcass the info panel shows as the boar it was, with its food, and the pointer over it gives the hunt's hints, not a forage bush's |
+| `carcassart` | A boar's carcass lies as the boar fell, the last frame of its dying graphic, while it holds food; then its remains lie for the dat's decay time, rotting through their frames; a sheep's carcass leaves none |
 | `herding`, `crowd`, `spread` | Villagers sent at a sheep kill it, take its food and bring it home, walking no further than they must; a crowd at one sheep works side by side, the rest standing by; villagers sent together to a point stand about it side by side |
 | `sequence`, `collapse` | Graphics run their dat sequences (a standing scout rests between plays of its idle); a destroyed building falls in its dying graphic over its rubble |
 | `shipangles`, `turning` | A ship shows the nearest of its graphic's sixteen angles, a soldier of eight; a ship or a trebuchet turns to its target an angle at a time before it shoots |

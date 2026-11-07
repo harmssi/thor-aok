@@ -34,6 +34,12 @@ void Exhaust(entt::registry& registry, Physics::Grid& grid, entt::entity resourc
 
     // Who does not see it go keeps it as it was.
     Fog::Going(registry, resource);
+    // A carcass gathered out leaves its body.
+    if (const auto* corpse = registry.try_get<Components::Corpse>(resource); corpse != nullptr && corpse->was >= 0) {
+        Mortality::Spent(registry, resource);
+        registry.destroy(resource);
+        return;
+    }
     if (const auto* at = registry.try_get<Components::Transform>(resource)) {
         const auto position = at->position;
         const int x = Physics::TileOf(position.x);

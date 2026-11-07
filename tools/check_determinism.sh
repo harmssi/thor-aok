@@ -95,6 +95,7 @@ BUILDSTUMP="$(echo "$OUTPUT" | grep '^buildstump=')"
 TCGROUND="$(echo "$OUTPUT" | grep '^tcground=')"
 HAWKS="$(echo "$OUTPUT" | grep '^hawks=')"
 CARCASS="$(echo "$OUTPUT" | grep '^carcass=')"
+CARCASSART="$(echo "$OUTPUT" | grep '^carcassart=')"
 COLOURS="$(echo "$OUTPUT" | grep '^colours=')"
 BUTTONS="$(echo "$OUTPUT" | grep '^buttons=')"
 SEARCH="$(echo "$OUTPUT" | grep '^search=')"
@@ -673,6 +674,13 @@ esac
 case "$CARCASS" in
     carcass=ok*) echo "carcass OK" ;;
     *) echo "CARCASS FAILED" >&2; echo "  $CARCASS" >&2; STATUS=1 ;;
+esac
+
+# A carcass lies as the animal fell while it holds food, then leaves its
+# rotting remains for the dat's decay time.
+case "$CARCASSART" in
+    carcassart=ok*) echo "carcassart OK" ;;
+    *) echo "CARCASSART FAILED" >&2; echo "  $CARCASSART" >&2; STATUS=1 ;;
 esac
 
 # Villagers sent at a sheep kill it, take its food within the dat's range and

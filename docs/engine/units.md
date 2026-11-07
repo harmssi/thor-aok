@@ -415,17 +415,20 @@ The `Dying` unit plays its dying graphic once through (a second,
 lays down its **dead unit**, the one the dat names for it, by the table it
 played by:
 
-- **A body.** A still sprite of the dead unit's standing graphic, facing the
-  way the unit fell, that lies for the dead unit's corpse decay time (a figure
-  the dat stores among its resources) and is then gone. It lies in its owner's
-  colour: a converted unit's body is its new owner's, though its dead unit is
-  its maker's.
-- **A carcass.** An animal with food left keeps it: the carcass takes the
-  animal's `Resource`, the dead unit's `Identity` and a `Selectable`, so it
-  can be clicked and gathered. It loses food at the animal's decay rate each
-  second, carried as a fraction, and is gone when nothing is left. Any worker
-  that was after the animal now makes for the carcass; one still on its way to
-  a carcass that rots away has nothing to go to.
+- **A body.** The dead unit's standing graphic, facing the way the unit
+  fell, that lies for the dead unit's corpse decay time (a figure the dat
+  stores among its resources) and is then gone, rotting through the graphic's
+  frames over that time. It lies in its owner's colour: a converted unit's
+  body is its new owner's, though its dead unit is its maker's.
+- **A carcass.** An animal with food left keeps it: the carcass is the animal
+  as it fell, the last frame of its dying graphic, and takes the animal's
+  `Resource`, the dead unit's `Identity` and a `Selectable`, so it can be
+  clicked and gathered. It loses food at the animal's decay rate each second,
+  carried as a fraction. When nothing is left, gathered or rotted, its dead
+  unit lies in its place as a body (`Mortality::Spent`): a boar's or a deer's
+  for five minutes, a sheep's not at all, its decay time being none. Any
+  worker that was after the animal now makes for the carcass; one still on its
+  way to a carcass that rots away has nothing to go to.
 
 `Mortality::PlayOnce` uses the same `Dying` timer for graphics that play once
 and are gone: a building's fall in dust, a stone bursting where it lands.
@@ -458,7 +461,8 @@ stateDiagram-v2
     Herded --> Dying: killed
     Fighting --> Dying: killed
     Dying --> Carcass: dying graphic played
-    Carcass --> [*]: food gathered, or rotted away
+    Carcass --> Remains: food gathered, or rotted away
+    Remains --> [*]: the dat's decay time
 ```
 
 ### Grazing
