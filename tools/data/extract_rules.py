@@ -60,6 +60,8 @@ def unit_rules(unit, strings):
         # heroes on a list of their own.
         'hide_in_editor': unit['hide_in_editor'],
         'hero': unit['hero'],
+        # A building may be laid over it, which removes it: a stump, rubble.
+        'can_be_built_on': unit['can_be_built_on'],
         'dead_unit': unit['dead_unit'],
         'dying_graphic': unit['dying_graphic'],
         'standing': unit['standing'],

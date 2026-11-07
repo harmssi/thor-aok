@@ -126,6 +126,8 @@ int Run(int ticks) {
     if (runs("dropoffbeyond")) ok &= CheckDropoffBeyond();
     if (runs("objectart")) ok &= CheckObjectArt();
     if (runs("stumps")) ok &= CheckStumps();
+    if (runs("forests")) ok &= CheckForests();
+    if (runs("buildstump")) ok &= CheckBuildOverStump();
     if (runs("tcground")) ok &= CheckTownCenterGround();
     if (runs("hawks")) ok &= CheckHawks();
     if (runs("carcass")) ok &= CheckCarcassPanel();

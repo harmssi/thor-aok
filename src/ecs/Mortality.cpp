@@ -81,6 +81,7 @@ void LayDown(entt::registry& registry, entt::entity dead) {
     registry.emplace<Components::Owner>(body, OwnerOf(registry, dead));
 
     Components::Corpse corpse;
+    corpse.remains = rules->dead_unit;
     if (remains != nullptr) corpse.remaining_ms = DecayMs(*remains);
 
     // An animal's food stays with its carcass, which can be gathered and rots.

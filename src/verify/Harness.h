@@ -372,6 +372,13 @@ bool CheckObjectArt();
 // A used-up tree's stump lies for the dat's decay time, its tile open.
 // Prints "stumps=".
 bool CheckStumps();
+// On every random map, every tile of ground that carries trees has its tree,
+// and no tree stands where land units could not walk once it is gone.
+// Prints "forests=".
+bool CheckForests();
+// A building can be laid over a stump, which it clears, but not over a
+// felled tree still holding wood. Prints "buildstump=".
+bool CheckBuildOverStump();
 // A Town Center keeps units off its back alone; a villager sent onto the
 // rest gets there, and nothing is built on any of it. Prints "tcground=".
 bool CheckTownCenterGround();

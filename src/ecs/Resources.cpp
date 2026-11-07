@@ -60,7 +60,10 @@ void Exhaust(entt::registry& registry, Physics::Grid& grid, entt::entity resourc
                 // then is gone.
                 const Core::Rules::UnitRules* stump_rules = Core::Rules::Unit(rules->dead_unit);
                 const int32_t lies = stump_rules != nullptr ? Mortality::DecayMs(*stump_rules) : 0;
-                if (lies > 0) registry.emplace<Components::Corpse>(stump, Components::Corpse{.remaining_ms = lies});
+                if (lies > 0) {
+                    registry.emplace<Components::Corpse>(
+                        stump, Components::Corpse{.remaining_ms = lies, .remains = rules->dead_unit});
+                }
             }
         }
     }

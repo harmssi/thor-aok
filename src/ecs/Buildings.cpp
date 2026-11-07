@@ -736,6 +736,20 @@ entt::entity Place(entt::registry& registry, Physics::Grid& grid, int unit_id,
             for (entt::entity e : dead) registry.destroy(e);
         }
     }
+    // What lies on its ground that the dat lets a building be laid over --
+    // a stump, a body, rubble -- is gone; a carcass still holding food stays.
+    {
+        const auto ground = FootprintBounds(origin, placed);
+        std::vector<entt::entity> cleared;
+        auto lying = registry.view<const Components::Corpse, const Components::Transform>();
+        for (auto e : lying) {
+            const auto& corpse = lying.get<const Components::Corpse>(e);
+            const R::UnitRules* what = R::Unit(corpse.remains);
+            if (corpse.was >= 0 || what == nullptr || !what->can_be_built_on) continue;
+            if (ground.DistanceFrom(lying.get<const Components::Transform>(e).position).value == 0) cleared.push_back(e);
+        }
+        for (entt::entity e : cleared) registry.destroy(e);
+    }
     if (complete) Hold(registry, grid, building);
 
     // The ground it stands on: a farm site's first stage from the start; the

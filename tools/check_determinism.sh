@@ -90,6 +90,8 @@ ANSWERDRAFT="$(echo "$OUTPUT" | grep '^answerdraft=')"
 DROPOFFBEYOND="$(echo "$OUTPUT" | grep '^dropoffbeyond=')"
 OBJECTART="$(echo "$OUTPUT" | grep '^objectart=')"
 STUMPS="$(echo "$OUTPUT" | grep '^stumps=')"
+FORESTS="$(echo "$OUTPUT" | grep '^forests=')"
+BUILDSTUMP="$(echo "$OUTPUT" | grep '^buildstump=')"
 TCGROUND="$(echo "$OUTPUT" | grep '^tcground=')"
 HAWKS="$(echo "$OUTPUT" | grep '^hawks=')"
 CARCASS="$(echo "$OUTPUT" | grep '^carcass=')"
@@ -639,6 +641,19 @@ esac
 case "$STUMPS" in
     stumps=ok*) echo "stumps OK" ;;
     *) echo "STUMPS FAILED" >&2; echo "  $STUMPS" >&2; STATUS=1 ;;
+esac
+
+# Every random map's forest ground has its trees, and none stands where
+# nobody could walk once it is used up.
+case "$FORESTS" in
+    forests=ok*) echo "forests OK" ;;
+    *) echo "FORESTS FAILED" >&2; echo "  $FORESTS" >&2; STATUS=1 ;;
+esac
+
+# A house can be laid over a stump, clearing it, but not over a felled tree.
+case "$BUILDSTUMP" in
+    buildstump=ok*) echo "buildstump OK" ;;
+    *) echo "BUILDSTUMP FAILED" >&2; echo "  $BUILDSTUMP" >&2; STATUS=1 ;;
 esac
 
 # A Town Center keeps units off its back alone; its open ground is walked, not

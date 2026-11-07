@@ -66,6 +66,8 @@ void PrintUnitRules(const genie::DatFile& dat, const genie::Unit& unit) {
                 static_cast<int>(unit.HideInEditor));
     // The scenario editor's Heroes list: creatables marked as heroes.
     std::printf(", \"hero\": %d", static_cast<int>(unit.Creatable.HeroMode));
+    // Whether a building may be laid over it, which removes it: a stump, rubble.
+    std::printf(", \"can_be_built_on\": %d", static_cast<int>(unit.CanBeBuiltOn));
     std::printf(", \"terrain_restriction\": %d", unit.TerrainRestriction);
     // Placement beyond the restriction: a ground one of the footprint's
     // neighbours must be (a dock's shore), and a ground it must stand on.

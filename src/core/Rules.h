@@ -229,6 +229,8 @@ struct UnitRules {
     // heroes rather than the units.
     bool hide_in_editor = false;
     bool hero = false;
+    // A building may be laid over it, which removes it: a stump, rubble.
+    bool can_be_built_on = false;
     int dead_unit = -1;
     int dying_graphic = -1;
     int standing_graphic = -1;

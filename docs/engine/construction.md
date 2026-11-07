@@ -216,6 +216,10 @@ other's; the first to begin work keeps it.
 The first work on a Wonder also shows its ground to every player (see
 [Victory and diplomacy](/engine/victory)).
 
+Laying a building, foundation or finished, clears what lies on its ground that
+the dat lets a building be laid over: a stump, a body, rubble. A felled tree
+still holding wood keeps its tile, so nothing is placed over it.
+
 ## Builders
 
 In the original, each villager added to a site raises it faster, but by less

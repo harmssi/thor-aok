@@ -74,6 +74,7 @@ void ReadUnit(const nlohmann::json& v, UnitRules& u, UnitText& text) {
     u.rotation = Fx(v, "rotation");
     u.enabled = Int(v, "enabled", 0) != 0;
     u.hide_in_editor = Int(v, "hide_in_editor", 0) != 0;
+    u.can_be_built_on = Int(v, "can_be_built_on", 0) != 0;
     u.hero = Int(v, "hero", 0) != 0;
     u.dead_unit = Int(v, "dead_unit", -1);
     u.dying_graphic = Int(v, "dying_graphic", -1);
