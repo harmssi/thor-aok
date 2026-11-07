@@ -89,6 +89,7 @@ DROPDOWNROWS="$(echo "$OUTPUT" | grep '^dropdownrows=')"
 ANSWERDRAFT="$(echo "$OUTPUT" | grep '^answerdraft=')"
 DROPOFFBEYOND="$(echo "$OUTPUT" | grep '^dropoffbeyond=')"
 OBJECTART="$(echo "$OUTPUT" | grep '^objectart=')"
+STUMPS="$(echo "$OUTPUT" | grep '^stumps=')"
 COLOURS="$(echo "$OUTPUT" | grep '^colours=')"
 BUTTONS="$(echo "$OUTPUT" | grep '^buttons=')"
 SEARCH="$(echo "$OUTPUT" | grep '^search=')"
@@ -629,6 +630,12 @@ esac
 case "$OBJECTART" in
     objectart=ok*) echo "objectart OK" ;;
     *) echo "OBJECTART FAILED" >&2; echo "  $OBJECTART" >&2; STATUS=1 ;;
+esac
+
+# A used-up tree's stump lies for its decay time, its tile open.
+case "$STUMPS" in
+    stumps=ok*) echo "stumps OK" ;;
+    *) echo "STUMPS FAILED" >&2; echo "  $STUMPS" >&2; STATUS=1 ;;
 esac
 
 # Villagers sent at a sheep kill it, take its food within the dat's range and

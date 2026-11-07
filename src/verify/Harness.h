@@ -369,6 +369,9 @@ bool CheckDropoffBeyond();
 // Every object the editor offers or a CD scenario places draws something, for
 // every owner, civilisation and age. Prints "objectart=".
 bool CheckObjectArt();
+// A used-up tree's stump lies for the dat's decay time, its tile open.
+// Prints "stumps=".
+bool CheckStumps();
 // A computer player's scout set on two wolves in its town: every swing it
 // begins at one wounds it. Prints "wolves=".
 bool CheckWolves();

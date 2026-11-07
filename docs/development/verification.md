@@ -90,6 +90,7 @@ the gate reads. The names below are those the gate prints.
 | `dropoff` | A villager sent to drop off: its whole load, part units included, and then it stands; only at its own finished building that takes it; the load banked on going into the Town Center, not a tower |
 | `dropoffbeyond` | A villager with a load and no way to any drop site stands with it, rather than looking for one every tick |
 | `felling` | A lumberjack's felling stroke with no wood cut, then the tree lying as its felled graphic, then wood cut from it |
+| `stumps` | A used-up tree's tile opens at once, and its stump lies for the dat's decay time, three minutes, then is gone |
 | `herding`, `crowd`, `spread` | Villagers sent at a sheep kill it, take its food and bring it home, walking no further than they must; a crowd at one sheep works side by side, the rest standing by; villagers sent together to a point stand about it side by side |
 | `sequence`, `collapse` | Graphics run their dat sequences (a standing scout rests between plays of its idle); a destroyed building falls in its dying graphic over its rubble |
 | `shipangles`, `turning` | A ship shows the nearest of its graphic's sixteen angles, a soldier of eight; a ship or a trebuchet turns to its target an angle at a time before it shoots |

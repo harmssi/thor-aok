@@ -125,6 +125,7 @@ int Run(int ticks) {
     if (runs("answerdraft")) ok &= CheckAnswerDraft();
     if (runs("dropoffbeyond")) ok &= CheckDropoffBeyond();
     if (runs("objectart")) ok &= CheckObjectArt();
+    if (runs("stumps")) ok &= CheckStumps();
     if (runs("wolves")) ok &= CheckWolves();
     if (runs("lobby")) ok &= CheckLobby();
     if (runs("formations")) ok &= CheckFormations();

@@ -1,6 +1,7 @@
 #pragma once
 #include <entt/entt.hpp>
 
+#include "core/Rules.h"
 #include "ecs/components/Transform.h"
 #include "physics/Grid.h"
 
@@ -25,5 +26,9 @@ entt::entity PlayOnce(entt::registry& registry, int graphic, Components::Vector2
 
 // Advances the dying and the dead by one tick.
 void Update(entt::registry& registry, Physics::Grid& grid, int32_t dt_ms);
+
+// How long the dat lets remains lie before they are gone (their corpse decay
+// time), in milliseconds; 0 when they stay.
+int32_t DecayMs(const Core::Rules::UnitRules& remains);
 
 } // namespace ECS::Mortality

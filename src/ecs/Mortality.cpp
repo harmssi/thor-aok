@@ -81,14 +81,7 @@ void LayDown(entt::registry& registry, entt::entity dead) {
     registry.emplace<Components::Owner>(body, OwnerOf(registry, dead));
 
     Components::Corpse corpse;
-    if (remains != nullptr) {
-        for (int i = 0; i < remains->storage_count; ++i) {
-            if (remains->storage[i].resource == kCorpseDecayTime) {
-                corpse.remaining_ms =
-                    (remains->storage[i].amount * Core::Fixed32(1000)).ToInt();
-            }
-        }
-    }
+    if (remains != nullptr) corpse.remaining_ms = DecayMs(*remains);
 
     // An animal's food stays with its carcass, which can be gathered and rots.
     if (const auto* food = registry.try_get<Components::Resource>(dead)) {
@@ -111,6 +104,15 @@ void LayDown(entt::registry& registry, entt::entity dead) {
 }
 
 } // namespace
+
+int32_t DecayMs(const R::UnitRules& remains) {
+    for (int i = 0; i < remains.storage_count; ++i) {
+        if (remains.storage[i].resource == kCorpseDecayTime) {
+            return (remains.storage[i].amount * Core::Fixed32(1000)).ToInt();
+        }
+    }
+    return 0;
+}
 
 entt::entity PlayOnce(entt::registry& registry, int graphic, Components::Vector2D at) {
     auto& cfg = Core::ConfigManager::Get();
