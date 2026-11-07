@@ -366,6 +366,9 @@ bool CheckAnswerDraft();
 // A villager with no way to any drop site stands with its load. Prints
 // "dropoffbeyond=".
 bool CheckDropoffBeyond();
+// Every object the editor offers or a CD scenario places draws something, for
+// every owner, civilisation and age. Prints "objectart=".
+bool CheckObjectArt();
 // A computer player's scout set on two wolves in its town: every swing it
 // begins at one wounds it. Prints "wolves=".
 bool CheckWolves();

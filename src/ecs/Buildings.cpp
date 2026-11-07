@@ -103,6 +103,18 @@ void DestroyPieces(entt::registry& registry, entt::entity building) {
     for (auto piece : pieces) registry.destroy(piece);
 }
 
+// The unit a unit is an age variant of, by name: "CRCH2" is the Monastery's
+// ("CRCH"). -1 when its name carries no age or names no other unit.
+int AgeVariantOf(int unit_id) {
+    if (unit_id < 0) return -1;
+    auto& cfg = Core::ConfigManager::Get();
+    const std::string name = cfg.GetUnitDatName(unit_id);
+    size_t end = name.size();
+    while (end > 0 && name[end - 1] >= '0' && name[end - 1] <= '9') --end;
+    if (end == 0 || end == name.size()) return -1;
+    return cfg.GetUnitIdByName(name.substr(0, end));
+}
+
 // Places a finished building's art. Large buildings are composed of a main
 // unit plus annex units, each with its own graphic at an offset from the
 // origin -- a Town Center is four such pieces. Each piece becomes its own
@@ -127,8 +139,15 @@ void SpawnArt(entt::registry& registry, entt::entity building) {
     const Core::PlayerId maker = Players::RulesPlayer(registry, building);
     const int art_unit = Players::ArtOf(registry, maker, unit_id);
 
-    const std::vector<Core::ConfigManager::Annex>* pieces = cfg.GetAnnexes(art_unit);
-    if (pieces == nullptr) pieces = cfg.GetAnnexes(unit_id);
+    // The units whose art it may wear, in turn: its art slot, itself, and
+    // the unit each of those is an age variant of (CRCH2 and CRCH4, which
+    // scenarios place, are the Monastery's).
+    const int candidates[] = {art_unit, unit_id, AgeVariantOf(art_unit), AgeVariantOf(unit_id)};
+
+    const std::vector<Core::ConfigManager::Annex>* pieces = nullptr;
+    for (int candidate : candidates) {
+        if (pieces == nullptr && candidate >= 0) pieces = cfg.GetAnnexes(candidate);
+    }
 
     // Without a composition the unit is a single graphic on its own tile,
     // resolved by name: the dat's standing graphic for the Mill is a fragment,
@@ -136,12 +155,27 @@ void SpawnArt(entt::registry& registry, entt::entity building) {
     if (pieces == nullptr) {
         const int civ = CivOf(registry, maker);
         const int age = Techs::Age(registry, maker) + 1;
-        auto art = cfg.GetBuildingArt(art_unit, age, civ);
-        if (!art.Valid()) art = cfg.GetBuildingArt(unit_id, age, civ);
-        // A building standing before its own age -- a Regicide game's Castle
-        // in the Dark Age -- wears its own first age's art.
-        for (int later = age + 1; later <= 4 && !art.Valid(); ++later) {
-            art = cfg.GetBuildingArt(art_unit, later, civ);
+        Core::ConfigManager::BuildingArt art;
+        for (int candidate : candidates) {
+            if (candidate < 0) continue;
+            art = cfg.GetBuildingArt(candidate, age, civ);
+            // A building standing before its own age -- a Regicide game's
+            // Castle in the Dark Age -- wears its own first age's art.
+            for (int later = age + 1; later <= 4 && !art.Valid(); ++later) {
+                art = cfg.GetBuildingArt(candidate, later, civ);
+            }
+            if (art.Valid()) break;
+        }
+        // None by name -- a Wonder, each civilisation's own, or a scenario's
+        // pavilion -- is the maker's own standing graphic in the dat.
+        if (!art.Valid()) {
+            for (int candidate : {art_unit, unit_id}) {
+                const R::UnitRules* rules = Players::UnitOf(registry, maker, candidate);
+                if (rules != nullptr && cfg.GetGraphic(rules->standing_graphic).Valid()) {
+                    art.body = rules->standing_graphic;
+                    break;
+                }
+            }
         }
         const auto body = cfg.GetGraphic(art.body);
         if (!body.Valid()) return;

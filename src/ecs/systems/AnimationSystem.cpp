@@ -20,15 +20,13 @@
 
 namespace ECS::Systems {
 
-namespace {
-
 // A composite graphic's pieces, from the dat's deltas: each another graphic,
 // or -- a delta naming no graphic -- the composite's own art, at its offset.
 // A galley's standing graphic is a hull, sails and a wake and has no art of
 // its own; a fishing ship's names art missing from the data beside its own,
 // which is what it then shows. Resolved here, on the change of graphic, so
 // drawing it only indexes atlases.
-void ResolvePieces(entt::registry& registry, entt::entity entity, int graphic) {
+void AnimationSystem::ResolvePieces(entt::registry& registry, entt::entity entity, int graphic) {
     const auto& deltas = Core::Media::Deltas(graphic);
     if (deltas.empty()) {
         registry.remove<Components::SpritePieces>(entity);
@@ -52,8 +50,6 @@ void ResolvePieces(entt::registry& registry, entt::entity entity, int graphic) {
     }
     registry.emplace_or_replace<Components::SpritePieces>(entity, pieces);
 }
-
-} // namespace
 
 void AnimationSystem::LoadSet(Components::Animation& anim,
                               const std::string& unit_name) {

@@ -88,6 +88,7 @@ MAPSCRIPTS="$(echo "$OUTPUT" | grep '^mapscripts=')"
 DROPDOWNROWS="$(echo "$OUTPUT" | grep '^dropdownrows=')"
 ANSWERDRAFT="$(echo "$OUTPUT" | grep '^answerdraft=')"
 DROPOFFBEYOND="$(echo "$OUTPUT" | grep '^dropoffbeyond=')"
+OBJECTART="$(echo "$OUTPUT" | grep '^objectart=')"
 COLOURS="$(echo "$OUTPUT" | grep '^colours=')"
 BUTTONS="$(echo "$OUTPUT" | grep '^buttons=')"
 SEARCH="$(echo "$OUTPUT" | grep '^search=')"
@@ -621,6 +622,13 @@ esac
 case "$DROPOFFBEYOND" in
     dropoffbeyond=ok*) echo "dropoffbeyond OK" ;;
     *) echo "DROPOFFBEYOND FAILED" >&2; echo "  $DROPOFFBEYOND" >&2; STATUS=1 ;;
+esac
+
+# Every object a game can hold draws something, for every owner, civilisation
+# and age.
+case "$OBJECTART" in
+    objectart=ok*) echo "objectart OK" ;;
+    *) echo "OBJECTART FAILED" >&2; echo "  $OBJECTART" >&2; STATUS=1 ;;
 esac
 
 # Villagers sent at a sheep kill it, take its food within the dat's range and

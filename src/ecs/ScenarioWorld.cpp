@@ -9,6 +9,7 @@
 #include "core/ConfigManager.h"
 #include "core/FixedMath.h"
 #include "core/MapGenerator.h"
+#include "core/Media.h"
 #include "core/Random.h"
 #include "core/Rules.h"
 #include "ecs/Allegiance.h"
@@ -33,6 +34,7 @@
 #include "ecs/components/Sight.h"
 #include "ecs/components/Sprite.h"
 #include "ecs/components/Transform.h"
+#include "ecs/systems/AnimationSystem.h"
 #include "pathfinding/Pathfinder.h"
 #include "scenario/Scenario.h"
 
@@ -154,9 +156,10 @@ entt::entity PlaceObject(entt::registry& registry, Physics::Grid& grid, int unit
                          Core::PlayerId owner, C::Vector2D at, Core::Fixed32 rotation, int frame) {
     auto& cfg = Core::ConfigManager::Get();
     Core::ConfigManager::ObjectArt art = cfg.GetObjectArt(unit_id);
+    const auto graphic = cfg.GetUnitGraphicById(unit_id, "idle_graphic0");
+    const int standing = graphic.graphic_id;
     if (!art.Valid()) {
         // Not one the random maps place: its own standing graphic.
-        const auto graphic = cfg.GetUnitGraphicById(unit_id, "idle_graphic0");
         if (graphic.Valid()) {
             art.unit_id = unit_id;
             art.slp_id = graphic.slp_id;
@@ -170,6 +173,11 @@ entt::entity PlaceObject(entt::registry& registry, Physics::Grid& grid, int unit
     if (art.Valid()) {
         art.unit_id = unit_id;
         Core::MapGenerator::PlaceMapObject(registry, entity, art, RandomOf(registry));
+        // A composite standing graphic draws as its pieces: a cactus's own
+        // art is not on the disc, the cactus beside it is.
+        if (standing >= 0 && !Core::Media::Deltas(standing).empty()) {
+            Systems::AnimationSystem::ResolvePieces(registry, entity, standing);
+        }
         // The editor chose the shape a still object stands as, and the way an
         // animal faces.
         if (auto* sprite = registry.try_get<C::Sprite>(entity)) {

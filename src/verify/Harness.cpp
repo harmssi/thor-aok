@@ -124,6 +124,7 @@ int Run(int ticks) {
     if (runs("dropdownrows")) ok &= CheckDropDownRows();
     if (runs("answerdraft")) ok &= CheckAnswerDraft();
     if (runs("dropoffbeyond")) ok &= CheckDropoffBeyond();
+    if (runs("objectart")) ok &= CheckObjectArt();
     if (runs("wolves")) ok &= CheckWolves();
     if (runs("lobby")) ok &= CheckLobby();
     if (runs("formations")) ok &= CheckFormations();

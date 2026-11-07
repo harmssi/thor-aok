@@ -114,6 +114,7 @@ the gate reads. The names below are those the gate prints.
 | `garrison` | Entering and leaving, refusals, garrison arrows, healing, the town bell; the count inside told for our own only |
 | `garrisonfall` | A walled-in tower destroyed: its garrison stands on the ground the tower held |
 | `animals`, `duties`, `monks` | Herding, fleeing, grazing; patrol, follow, guard; conversion, facing whom they convert, healing, relics |
+| `objectart` | Every object the scenario editor offers or a scenario or campaign on the CD places draws something, put down through the scenario's own placement for the eight players and Gaia, in every civilisation and age; only what the CD holds no art for at all is let off |
 | `maps` | Islands, continents, beaches, cliffs and fish across several map scripts |
 | `connections` | A map script's connections: on Black Forest and Rivers, every start reaches every other by land, Town Centers stepped over |
 | `mapscripts` | Every map in the lobby's Map Type list is played from its own script, two-word names such as Black Forest included |
