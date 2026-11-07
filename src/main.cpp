@@ -578,15 +578,19 @@ void ApplyCaptureFlags(ECS::Simulation& sim, const Launch& launch, int& mcx, int
     // Laid first, so --select can pick one of them.
     if (!launch.place_name.empty()) {
         auto& grid = sim.GetGrid();
-        const int unit = Core::ConfigManager::Get().GetUnitIdByName(launch.place_name);
+        // NAME@P: player P's, 0 Gaia's.
+        const size_t owner_at = launch.place_name.find('@');
+        const int unit = Core::ConfigManager::Get().GetUnitIdByName(launch.place_name.substr(0, owner_at));
+        const Core::PlayerId owner = owner_at == std::string::npos
+                                         ? Core::LocalPlayer()
+                                         : static_cast<Core::PlayerId>(std::atoi(launch.place_name.c_str() + owner_at + 1));
         bool placed = false;
         for (int r = 5; r < 20 && !placed && unit >= 0; ++r) {
             for (int dy = -r; dy <= r && !placed; ++dy) {
                 for (int dx = -r; dx <= r && !placed; ++dx) {
                     if (std::max(std::abs(dx), std::abs(dy)) != r) continue;
                     if (ECS::Buildings::CanPlace(grid, unit, mcx + dx, mcy + dy)) {
-                        ECS::Buildings::Place(sim.GetRegistry(), grid, unit, Core::LocalPlayer(),
-                                              mcx + dx, mcy + dy, true);
+                        ECS::Buildings::Place(sim.GetRegistry(), grid, unit, owner, mcx + dx, mcy + dy, true);
                         placed = true;
                     }
                 }
