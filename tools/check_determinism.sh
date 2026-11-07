@@ -18,7 +18,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TICKS=3000
-GOLDEN="entities=1970 ticks=3000 hash=221acd07913e73ac"
+GOLDEN="entities=1970 ticks=3000 hash=e3ee8d61ecf85d23"
 
 # Build first; stop on failure.
 if ! "$ROOT/build.sh" >/dev/null 2>&1; then
@@ -91,6 +91,7 @@ DROPOFFBEYOND="$(echo "$OUTPUT" | grep '^dropoffbeyond=')"
 OBJECTART="$(echo "$OUTPUT" | grep '^objectart=')"
 STUMPS="$(echo "$OUTPUT" | grep '^stumps=')"
 TCGROUND="$(echo "$OUTPUT" | grep '^tcground=')"
+HAWKS="$(echo "$OUTPUT" | grep '^hawks=')"
 COLOURS="$(echo "$OUTPUT" | grep '^colours=')"
 BUTTONS="$(echo "$OUTPUT" | grep '^buttons=')"
 SEARCH="$(echo "$OUTPUT" | grep '^search=')"
@@ -644,6 +645,12 @@ esac
 case "$TCGROUND" in
     tcground=ok*) echo "tcground OK" ;;
     *) echo "TCGROUND FAILED" >&2; echo "  $TCGROUND" >&2; STATUS=1 ;;
+esac
+
+# A new map's hawks fly about it, up at their height, flapping and gliding.
+case "$HAWKS" in
+    hawks=ok*) echo "hawks OK" ;;
+    *) echo "HAWKS FAILED" >&2; echo "  $HAWKS" >&2; STATUS=1 ;;
 esac
 
 # Villagers sent at a sheep kill it, take its food within the dat's range and

@@ -51,6 +51,9 @@ constexpr uint32_t kGroupDigits = 50403;
 // More than a building's art is ever set off its position, in tiles each
 // way (EntityRenderer::ArtOffset: half its footprint's lopsidedness).
 constexpr float kMostArtOffset = 4.0f;
+// The dat's graphic layers drawn on the ground under a lifted sprite rather
+// than with it: its shadow's (10) and below.
+constexpr int kGroundLayer = 10;
 
 struct SelectionMark {
     int sx = 0, sy = 0;           // the pixel its outline is centred on
@@ -652,7 +655,11 @@ void EntityRenderer::DrawGroundLevel(ECS::Simulation& sim, Renderer& renderer, S
                     graphics.GetAtlas(static_cast<uint32_t>(piece.slp_id));
                 if (!piece_atlas) continue;
                 const HAL::ArtPlace art = graphics.Art(static_cast<uint32_t>(piece.slp_id), owner_player);
-                if (art.page == nullptr) continue;
+                // A piece that is all shadow -- a hawk's, under it on the
+                // ground -- draws in the shadow pass.
+                const HAL::ArtPlace shadow =
+                    art.page == nullptr ? graphics.Shadow(static_cast<uint32_t>(piece.slp_id)) : HAL::ArtPlace{};
+                if (art.page == nullptr && shadow.page == nullptr) continue;
                 // Of n facings the first n/2 + 1 are stored, clockwise from
                 // south, and the rest mirror them.
                 const int n = std::max(1, piece.angles);
@@ -667,6 +674,23 @@ void EntityRenderer::DrawGroundLevel(ECS::Simulation& sim, Renderer& renderer, S
                 if (frame < 0 || static_cast<size_t>(frame) >= piece_atlas->frames.size()) continue;
                 const HAL::GraphicFrame& gf = piece_atlas->frames[static_cast<size_t>(frame)];
                 if (gf.rect.w <= 0) continue;
+                // Lifted, a flier's pieces of the dat's ground layers -- its
+                // shadow -- stay on the ground under it.
+                const bool on_ground = piece.bias / ECS::Components::SpritePieces::kMax <= kGroundLayer;
+                const int lift = on_ground ? 0 : sprite.lift_px;
+                if (art.page == nullptr) {
+                    RenderEntry cast = e;
+                    const int ax = flip ? (gf.rect.w - gf.hotspot_x) : gf.hotspot_x;
+                    cast.shadow_tex = shadow.PageOf(gf.rect);
+                    cast.shadow_src = shadow.On(gf.rect);
+                    cast.shadow_flip = flip;
+                    cast.shadow_dest.x = sx + static_cast<float>(piece.offset_x - ax);
+                    cast.shadow_dest.y = sy + static_cast<float>(piece.offset_y - gf.hotspot_y - lift);
+                    cast.shadow_dest.w = static_cast<float>(gf.rect.w);
+                    cast.shadow_dest.h = static_cast<float>(gf.rect.h);
+                    entries.push_back(cast);
+                    continue;
+                }
                 RenderEntry part = e;
                 part.sort_bias = sprite.sort_bias + piece.bias;
                 part.is_selected = first && e.is_selected;
@@ -681,8 +705,7 @@ void EntityRenderer::DrawGroundLevel(ECS::Simulation& sim, Renderer& renderer, S
                 part.flip_h = flip;
                 const int anchor_x = flip ? (gf.rect.w - gf.hotspot_x) : gf.hotspot_x;
                 part.dest.x = sx + static_cast<float>(piece.offset_x - anchor_x);
-                part.dest.y = sy + static_cast<float>(piece.offset_y - gf.hotspot_y) -
-                              static_cast<float>(sprite.lift_px);
+                part.dest.y = sy + static_cast<float>(piece.offset_y - gf.hotspot_y - lift);
                 part.dest.w = static_cast<float>(gf.rect.w);
                 part.dest.h = static_cast<float>(gf.rect.h);
                 part.outline_player = owner_player;

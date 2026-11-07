@@ -70,7 +70,7 @@ whether there is room. The three bulk systems in `src/ecs/systems/`
 | `Search`, `Turning` | Which classes each kind of unit looks for round itself; turning to face a target at the dat's rotation speed |
 | `Garrisons` | Units in buildings and aboard transport ships; the town bell |
 | `Monks`, `Relics` | Conversion and healing; relics carried to monasteries and the gold they earn |
-| `Animals`, `Allegiance` | Grazing, herdables and prey; an entity passing from one player to another |
+| `Animals`, `Allegiance` | Grazing, flying, herdables and prey; an entity passing from one player to another |
 | `Packing`, `Repairs` | Trebuchets packing and setting up; who may mend what, how fast, at what cost |
 | `Walls` | Walls laid as dragged lines, each segment's piece chosen by its neighbours; gates and locking |
 | `Market`, `Trade`, `Tribute` | Commodity prices; trade carts and cogs; tribute and its fee |
@@ -134,7 +134,7 @@ slower rather than showing it seldom.
 | 13 | `Duties::Update` | Patrol, guard and follow |
 | 14 | `Monks::Update` | Faith comes back; conversions and heals go on |
 | 15 | `Relics::Update` | Relic errands; monasteries pay; a fallen carrier drops its relic |
-| 16 | `Animals::Update` | Herdables change hands, grazers wander, the fleeing stop |
+| 16 | `Animals::Update` | Herdables change hands, grazers wander, hawks fly, the fleeing stop |
 | 17 | `Combat::Update` | Targets found, closed on, struck or shot on the reload |
 | 18 | `Missiles::Update` | Every missile flown one tick; those that arrive land |
 | 19 | `Mortality::Update` | The dying and the dead advanced |

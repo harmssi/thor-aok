@@ -204,6 +204,10 @@ void ReadUnit(const nlohmann::json& v, UnitRules& u, UnitText& text) {
             if (t.size() > 6) task.resource_out = t[6].get<int>();
             if (t.size() > 7) task.carrying_graphic = t[7].get<int>();
             if (t.size() > 8) task.auto_search = t[8].get<int>() != 0;
+            if (t.size() > 10) {
+                task.moving_graphic = t[9].get<int>();
+                task.proceeding_graphic = t[10].get<int>();
+            }
         }
     }
 }

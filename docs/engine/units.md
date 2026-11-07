@@ -61,6 +61,7 @@ units they act on by these, so a unit on patrol is simply one with a `Duty`:
 | `Trader` | a trade cart or cog has been set trading: its route and its load | `Trade` |
 | `RulesOf` | it has changed hands, and plays by its maker's table | `Allegiance` |
 | `Grazer` | an animal that grazes | `Animals` |
+| `Flier` | a bird on the wing: a hawk | `Animals` |
 | `Dying` | playing its death | `Mortality` |
 
 A unit inside a building or aboard a transport has no `Transform` at all,
@@ -480,6 +481,24 @@ sheep a player has taken stands where it is put.
 | `kWanderReach` | 2 tiles | how far from home a step may end |
 | `kFleeSights`, `kFleeMs` | 3, 6000 | prey runs three times its sight, and stops grazing for 6 s |
 | `kHerdCheckTicks` | 8 | how often a herdable looks round, staggered by entity |
+
+### Flying
+
+A unit whose rules have a Fly task, the hawk, is given a `Flier` on the same
+first look, and is drawn up at its height from then on: nine height units, each
+half a tile's height on the screen. Its graphic's shadow piece, of the dat's
+ground layers, stays on the ground under it. It never lands. It picks a point
+anywhere on the map, whole tiles from 1 to the side less one, from the world's
+seeded generator, and flies there along an ordinary route at the dat's speed;
+arrived, or with no way there, it picks the next. On the way it flaps (the
+task's moving graphic) for a spell of 5 to 14 whole seconds, then glides (its
+proceeding graphic) for another, by turns, and every new leg starts flapping.
+A bird in the air is in nobody's way: crowds do not make room for it.
+
+| Constant | Value | Meaning |
+|---|---|---|
+| `kFlightHeight` | 9 | a flier's height, in half tile heights |
+| `kLeastSpellS`, `kSpellSpreadS` | 5, 10 | a spell of flapping or gliding lasts 5 s plus up to 9 s more |
 
 ### Herding
 

@@ -5,19 +5,23 @@
 #include <vector>
 
 #include "core/FixedMath.h"
+#include "core/IsometricMath.h"
 #include "core/Random.h"
 #include "core/Rules.h"
 #include "ecs/Combat.h"
 #include "ecs/Events.h"
 #include "ecs/Players.h"
+#include "ecs/systems/AnimationSystem.h"
 #include "ecs/components/Building.h"
 #include "ecs/components/Combat.h"
+#include "ecs/components/Flier.h"
 #include "ecs/components/Grazer.h"
 #include "ecs/components/Health.h"
 #include "ecs/components/Identity.h"
 #include "ecs/components/Mortal.h"
 #include "ecs/components/Owner.h"
 #include "ecs/components/Path.h"
+#include "ecs/components/Sprite.h"
 #include "ecs/components/Transform.h"
 #include "ecs/components/Worker.h"
 #include "pathfinding/Pathfinder.h"
@@ -42,6 +46,13 @@ constexpr int32_t kFleeMs = 6000;
 
 // How often herdables look about them, staggered by entity.
 constexpr int32_t kHerdCheckTicks = 8;
+
+// A flier's height above the ground, in height units, which the original
+// draws half a tile's height each.
+constexpr int kFlightHeight = 9;
+// How long a flier flaps, or glides, before it changes: 5 to 14 whole seconds.
+constexpr int32_t kLeastSpellS = 5;
+constexpr int32_t kSpellSpreadS = 10;
 
 const R::UnitRules* RulesOf(const entt::registry& registry, entt::entity entity) {
     const auto* identity = registry.try_get<Components::Identity>(entity);
@@ -250,8 +261,41 @@ void Changed(entt::registry& registry) {
 
 namespace {
 
-// Every grazer gets its place on first sight: those of the things given an
-// identity or a place, or a new identity, since the last look.
+// By unit id, whether that unit flies: its rules have a Fly task.
+const std::vector<bool>& MayFly() {
+    static const std::vector<bool> may = [] {
+        const R::Tables& tables = R::Get();
+        std::vector<bool> out(tables.units.size(), false);
+        for (size_t id = 0; id < tables.units.size(); ++id) {
+            out[id] = tables.units[id].valid && HasTask(tables.units[id], R::TaskAction::Fly);
+        }
+        return out;
+    }();
+    return may;
+}
+
+// The Fly task's two graphics, flapping and gliding, or -1.
+void FlyGraphics(const R::UnitRules& rules, int& flapping, int& gliding) {
+    flapping = gliding = -1;
+    for (int t = 0; t < rules.task_count; ++t) {
+        if (rules.tasks[t].action != R::TaskAction::Fly) continue;
+        flapping = rules.tasks[t].moving_graphic;
+        gliding = rules.tasks[t].proceeding_graphic;
+    }
+    if (flapping < 0) flapping = rules.standing_graphic;
+    if (gliding < 0) gliding = rules.standing_graphic;
+}
+
+// A flier's walk shows `graphic`: its flapping or its gliding.
+void ShowFlight(entt::registry& registry, entt::entity flier, int graphic) {
+    if (auto* anim = registry.try_get<Components::Animation>(flier)) {
+        Systems::AnimationSystem::LoadSlot(*anim, Components::AnimState::Walk, graphic);
+    }
+}
+
+// Every grazer and every flier gets its place on first sight: those of the
+// things given an identity or a place, or a new identity, since the last
+// look. A flier is up at its height at once.
 void TakeUpGrazing(entt::registry& registry) {
     if (!registry.ctx().contains<Unsurveyed>()) {
         registry.ctx().emplace<Unsurveyed>();
@@ -262,15 +306,29 @@ void TakeUpGrazing(entt::registry& registry) {
     if (!unsurveyed.look) return;
     unsurveyed.look = false;
     static std::vector<entt::entity> fresh;
+    static std::vector<entt::entity> fliers;
     fresh.clear();
+    fliers.clear();
     auto animals = registry.view<Components::Identity, Components::Transform>(
-        entt::exclude<Components::Grazer, Components::Building>);
+        entt::exclude<Components::Grazer, Components::Flier, Components::Building>);
     const std::vector<bool>& may_graze = MayGraze();
+    const std::vector<bool>& may_fly = MayFly();
     for (auto e : animals) {
         const int id = animals.get<Components::Identity>(e).unit_id;
-        if (id < 0 || static_cast<size_t>(id) >= may_graze.size() || !may_graze[static_cast<size_t>(id)]) continue;
+        if (id < 0 || static_cast<size_t>(id) >= may_graze.size()) continue;
+        const bool grazes = may_graze[static_cast<size_t>(id)];
+        const bool flies = may_fly[static_cast<size_t>(id)];
+        if (!grazes && !flies) continue;
         const R::UnitRules* rules = RulesOf(registry, e);
-        if (rules != nullptr && HasTask(*rules, R::TaskAction::Graze)) fresh.push_back(e);
+        if (rules == nullptr) continue;
+        if (grazes && HasTask(*rules, R::TaskAction::Graze)) fresh.push_back(e);
+        else if (flies && HasTask(*rules, R::TaskAction::Fly)) fliers.push_back(e);
+    }
+    for (auto e : fliers) {
+        registry.emplace<Components::Flier>(e);
+        if (auto* sprite = registry.try_get<Components::Sprite>(e)) {
+            sprite->lift_px = kFlightHeight * Core::IsometricMath::TILE_HEIGHT / 2;
+        }
     }
     auto& rng = registry.ctx().get<Core::Random>();
     for (auto e : fresh) {
@@ -280,10 +338,57 @@ void TakeUpGrazing(entt::registry& registry) {
     }
 }
 
+// The Fly task, as the original runs it: a point anywhere on the map, whole
+// tiles 1 to the side less one, flown to over whatever ground; on the way it
+// flaps for a spell, then glides for one, by turns. Arrived, or with no way
+// there, it picks the next. It never lands.
+void Fly(entt::registry& registry, const Physics::Grid& grid, int32_t dt_ms) {
+    using Phase = Components::Flier::Phase;
+    auto& rng = registry.ctx().get<Core::Random>();
+    auto spell = [&rng] { return (kLeastSpellS + static_cast<int32_t>(rng.NextInt(kSpellSpreadS))) * 1000; };
+    const auto& paths = registry.storage<Components::Path>();
+    auto fliers = registry.view<Components::Flier, Components::Transform, Components::Identity>(
+        entt::exclude<Components::Dying>);
+    for (auto e : fliers) {
+        auto& flier = fliers.get<Components::Flier>(e);
+        const R::UnitRules* rules = RulesOf(registry, e);
+        if (rules == nullptr) continue;
+        int flapping = -1, gliding = -1;
+        FlyGraphics(*rules, flapping, gliding);
+        if (flier.spell_ms > 0) flier.spell_ms -= dt_ms;
+        const bool going = paths.contains(e) &&
+                           paths.get(e).current_waypoint_index < paths.get(e).waypoints.size();
+        if (flier.phase == Phase::Picking) {
+            const int w = grid.GetWidth(), h = grid.GetHeight();
+            if (w < 3 || h < 3) continue;
+            const Components::Vector2D to{Core::Fixed32(1 + static_cast<int>(rng.NextInt(static_cast<uint32_t>(w - 1)))),
+                                          Core::Fixed32(1 + static_cast<int>(rng.NextInt(static_cast<uint32_t>(h - 1))))};
+            const auto& at = fliers.get<Components::Transform>(e).position;
+            auto path = Navigation::Route(registry, grid, e, at, to);
+            if (path.waypoints.empty()) continue;
+            registry.emplace_or_replace<Components::Path>(e, std::move(path));
+            flier.phase = Phase::Flapping;
+            flier.spell_ms = spell();
+            ShowFlight(registry, e, flapping);
+            continue;
+        }
+        if (flier.spell_ms <= 0) {
+            flier.phase = flier.phase == Phase::Flapping ? Phase::Gliding : Phase::Flapping;
+            flier.spell_ms = spell();
+            ShowFlight(registry, e, flier.phase == Phase::Flapping ? flapping : gliding);
+        }
+        if (!going) {
+            flier.phase = Phase::Picking;
+            ShowFlight(registry, e, flapping);
+        }
+    }
+}
+
 } // namespace
 
 void Update(entt::registry& registry, const Physics::Grid& grid, int32_t dt_ms) {
     TakeUpGrazing(registry);
+    Fly(registry, grid, dt_ms);
     auto& rng = registry.ctx().get<Core::Random>();
     if (const Events::Log* log = Events::Read(registry)) Herd(registry, grid, log->tick);
 

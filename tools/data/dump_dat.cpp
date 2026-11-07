@@ -200,16 +200,19 @@ void PrintUnitRules(const genie::DatFile& dat, const genie::Unit& unit) {
         if (!first_task) std::printf(", ");
         first_task = false;
         // [action, target class, target unit, resource in, work range,
-        // work value, resource out, carrying graphic, auto search]: what a
-        // gather task takes from its target and what it hands over (a fishing
-        // ship takes fish, 17, and its load is food, 0), what the unit wears
-        // coming back with the load (a trade cart's trade task names the full
-        // cart's walk, 1145, TCARTF), and whether the unit looks for another
-        // target when this one is gone (every villager job's gather task does).
-        std::printf("[%d, %d, %d, %d, %.3f, %.3f, %d, %d, %d]", static_cast<int>(task.ActionType),
+        // work value, resource out, carrying graphic, auto search, moving
+        // graphic, proceeding graphic]: what a gather task takes from its
+        // target and what it hands over (a fishing ship takes fish, 17, and its
+        // load is food, 0), what the unit wears coming back with the load (a
+        // trade cart's trade task names the full cart's walk, 1145, TCARTF),
+        // whether the unit looks for another target when this one is gone
+        // (every villager job's gather task does), and the two graphics a
+        // hawk's Fly task takes turns in (846 flapping, 1595 gliding).
+        std::printf("[%d, %d, %d, %d, %.3f, %.3f, %d, %d, %d, %d, %d]", static_cast<int>(task.ActionType),
                     task.ClassID, task.UnitID, task.ResourceIn, task.WorkRange,
                     task.WorkValue1, task.ResourceOut, task.CarryingGraphicID,
-                    static_cast<int>(task.AutoSearchTargets));
+                    static_cast<int>(task.AutoSearchTargets), task.MovingGraphicID,
+                    task.ProceedingGraphicID);
     }
     std::printf("]");
     std::printf("}");

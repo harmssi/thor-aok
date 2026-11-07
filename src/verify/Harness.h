@@ -375,6 +375,9 @@ bool CheckStumps();
 // A Town Center keeps units off its back alone; a villager sent onto the
 // rest gets there, and nothing is built on any of it. Prints "tcground=".
 bool CheckTownCenterGround();
+// A new map's hawks fly about it, drawn up at their height, flapping and
+// gliding by turns. Prints "hawks=".
+bool CheckHawks();
 // A computer player's scout set on two wolves in its town: every swing it
 // begins at one wounds it. Prints "wolves=".
 bool CheckWolves();

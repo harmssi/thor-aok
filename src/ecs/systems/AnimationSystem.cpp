@@ -71,6 +71,18 @@ void AnimationSystem::LoadSet(Components::Animation& anim,
     }
 }
 
+void AnimationSystem::LoadSlot(Components::Animation& anim, Components::AnimState state, int graphic) {
+    auto& cfg = Core::ConfigManager::Get();
+    const auto gfx = cfg.GetGraphic(graphic);
+    const int a = static_cast<int>(state);
+    anim.graphic[a] = gfx.slp_id >= 0 ? graphic : -1;
+    anim.slp[a] = gfx.slp_id;
+    anim.frames[a] = gfx.frame_count;
+    anim.angles[a] = std::max(1, gfx.angle_count);
+    anim.frame_ms[a] = cfg.GetFrameMs(graphic, 80);
+    anim.needs_apply = true;
+}
+
 void AnimationSystem::Update(entt::registry& registry, int32_t dt_ms) {
     // 0. A villager changing job changes graphic set entirely.
     auto worker_view = registry.view<Components::Animation, Components::Worker>();

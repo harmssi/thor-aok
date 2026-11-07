@@ -8,6 +8,7 @@
 #include "ecs/Players.h"
 #include "ecs/components/Animation.h"
 #include "ecs/components/Building.h"
+#include "ecs/components/Flier.h"
 #include "ecs/components/Identity.h"
 #include "ecs/components/Mortal.h"
 #include "ecs/components/Owner.h"
@@ -132,6 +133,8 @@ void Survey(entt::registry& registry, const Physics::Grid& grid) {
     const auto& buildings = registry.storage<Components::Building>();
     const auto& dying = registry.storage<Components::Dying>();
     const auto& corpses = registry.storage<Components::Corpse>();
+    // A bird in the air is in nobody's way.
+    const auto& fliers = registry.storage<Components::Flier>();
     const auto& paths = registry.storage<Components::Path>();
     const auto& identities = registry.storage<Components::Identity>();
     const auto& makers = registry.storage<Components::RulesOf>();
@@ -139,7 +142,7 @@ void Survey(entt::registry& registry, const Physics::Grid& grid) {
     const Players::Table* table = Players::TableOf(registry);
     auto units = registry.view<const Components::Transform, const Components::Animation>();
     for (auto e : units) {
-        if (buildings.contains(e) || dying.contains(e) || corpses.contains(e)) continue;
+        if (buildings.contains(e) || dying.contains(e) || corpses.contains(e) || fliers.contains(e)) continue;
         const auto& at = units.get<const Components::Transform>(e).position;
         if (!grid.InBounds(Physics::TileOf(at.x), Physics::TileOf(at.y))) continue;
         // RadiusOf, from the storages and the table found above.
