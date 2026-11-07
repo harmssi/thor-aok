@@ -92,6 +92,7 @@ OBJECTART="$(echo "$OUTPUT" | grep '^objectart=')"
 STUMPS="$(echo "$OUTPUT" | grep '^stumps=')"
 FORESTS="$(echo "$OUTPUT" | grep '^forests=')"
 BUILDSTUMP="$(echo "$OUTPUT" | grep '^buildstump=')"
+FELLEDPLACED="$(echo "$OUTPUT" | grep '^felledplaced=')"
 TCGROUND="$(echo "$OUTPUT" | grep '^tcground=')"
 HAWKS="$(echo "$OUTPUT" | grep '^hawks=')"
 CARCASS="$(echo "$OUTPUT" | grep '^carcass=')"
@@ -655,6 +656,12 @@ esac
 case "$BUILDSTUMP" in
     buildstump=ok*) echo "buildstump OK" ;;
     *) echo "BUILDSTUMP FAILED" >&2; echo "  $BUILDSTUMP" >&2; STATUS=1 ;;
+esac
+
+# A tree placed as a scenario places it, felled, draws as the felled trunk.
+case "$FELLEDPLACED" in
+    felledplaced=ok*) echo "felledplaced OK" ;;
+    *) echo "FELLEDPLACED FAILED" >&2; echo "  $FELLEDPLACED" >&2; STATUS=1 ;;
 esac
 
 # A Town Center keeps units off its back alone; its open ground is walked, not

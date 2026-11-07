@@ -93,6 +93,7 @@ the gate reads. The names below are those the gate prints.
 | `stumps` | A used-up tree's tile opens at once, and its stump lies for the dat's decay time, three minutes, then is gone |
 | `forests` | On every random map, every tile of ground that carries trees has its tree (Black Forest's base forest among them), and no tree stands where land units could not walk once it is used up |
 | `buildstump` | A house can be placed over a stump, and laying it clears the stump; none can be placed over a felled tree still holding wood |
+| `felledplaced` | A tree placed as a scenario or the editor places it draws as its standing graphic's pieces; felled, it draws as the felled trunk, no standing piece left |
 | `tcground` | A Town Center keeps units off its back, the one piece the dat gives an obstruction; a villager sent onto the rest of its footprint gets there, and nothing else is built on any of it |
 | `hawks` | A new map's hawks fly about it, covering ground at the dat's speed, drawn up at their height, flapping and gliding by turns, never leaving the map |
 | `carcass` | A wild boar killed lies as a carcass the info panel shows as the boar it was, with its food, and the pointer over it gives the hunt's hints, not a forage bush's |

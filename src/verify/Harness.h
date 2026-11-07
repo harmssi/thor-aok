@@ -379,6 +379,9 @@ bool CheckForests();
 // A building can be laid over a stump, which it clears, but not over a
 // felled tree still holding wood. Prints "buildstump=".
 bool CheckBuildOverStump();
+// A tree placed as a scenario places it, felled, draws as the felled trunk.
+// Prints "felledplaced=".
+bool CheckFelledPlaced();
 // A Town Center keeps units off its back alone; a villager sent onto the
 // rest gets there, and nothing is built on any of it. Prints "tcground=".
 bool CheckTownCenterGround();
