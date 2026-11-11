@@ -32,6 +32,9 @@ enum Command : int {
     kTechTree = 11,
 };
 
+// A command for the next frame, from the deck or from the controller (hal/Pad).
+void Push(int type, int a = 0, int b = 0);
+
 // Once a frame, after the world is drawn: runs the deck's commands and
 // writes the snapshot (and now and then the mini-map's picture).
 void Frame(ECS::Simulation& sim, Rendering::Renderer& renderer, SDL_Renderer* sdl_r, int win_w,

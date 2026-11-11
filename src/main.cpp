@@ -1824,6 +1824,7 @@ int main(int argc, char* argv[]) {
     // Played with the fingers as with a mouse (hal/Touch), and the back
     // gesture is Escape (hal/Window) rather than the end of the game.
     HAL::Touch::Enable();
+    HAL::Pad::Enable();   // a handheld's sticks and buttons (Thor AoK)
     SDL_SetHint(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, "1");
     if (const char* storage = SDL_AndroidGetInternalStoragePath()) {
         const std::string run = std::string(storage) + "/game/build";

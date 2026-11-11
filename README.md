@@ -65,6 +65,24 @@ The game plays The Age of Kings' rules from The Conquerors' data: the 13 origina
 | **Mini-map** | Drawn by the engine's mini-map code (terrain, fog, units) with the view frame. |
 | **Languages** | Deck and launcher in English, Deutsch, Español, Français. The game's own text comes from your HD files (English). |
 
+## Sticks and buttons (0.2.0)
+
+| Control | Does |
+|---|---|
+| Left stick | Moves the pointer |
+| Right stick | Scrolls the map; with L2 held, zooms |
+| A | Select (hold and move: a box) |
+| B | Order: move, gather, build, attack |
+| X | Next idle villager |
+| Y | Back out of whatever is half done |
+| L1 / R1 | Town Center / next idle military unit |
+| L2, held | Shift: add to a selection, queue orders, train five |
+| D-pad up, right, down, left | Pick control group 1, 2, 3, 4 |
+| R2 held + D-pad | Set that control group from the selection |
+| Start | Game menu |
+
+Touch on the top screen works as before.
+
 ## Building
 
 ```sh

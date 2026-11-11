@@ -225,6 +225,11 @@ void RunCommands(ECS::Simulation& sim, Rendering::Renderer& renderer, int win_w,
 bool Dual() { return g_dual.load(std::memory_order_relaxed); }
 void SetDual(bool on) { g_dual.store(on); }
 
+void Push(int type, int a, int b) {
+    std::lock_guard<std::mutex> hold(S().lock);
+    if (S().commands.size() < 64) S().commands.push_back({type, a, b});
+}
+
 void Frame(ECS::Simulation& sim, Rendering::Renderer& renderer, SDL_Renderer* sdl_r, int win_w, int win_h) {
     if (!Dual()) return;
     RunCommands(sim, renderer, win_w, win_h);
@@ -327,8 +332,7 @@ JNIEXPORT void JNICALL Java_org_openaok_game_ThorBridge_setDualScreen(JNIEnv*, j
 }
 
 JNIEXPORT void JNICALL Java_org_openaok_game_ThorBridge_pushCommand(JNIEnv*, jclass, jint type, jint a, jint b) {
-    std::lock_guard<std::mutex> hold(Thor::S().lock);
-    if (Thor::S().commands.size() < 64) Thor::S().commands.push_back({type, a, b});
+    Thor::Push(type, a, b);
 }
 
 // out[0] = age of the snapshot in ms, then the snapshot; the ints written, 0 = none yet.
