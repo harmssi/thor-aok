@@ -18,7 +18,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TICKS=3000
-GOLDEN="entities=1970 ticks=3000 hash=221acd07913e73ac"
+GOLDEN="entities=1970 ticks=3000 hash=e3ee8d61ecf85d23"
 
 # Build first; stop on failure.
 if ! "$ROOT/build.sh" >/dev/null 2>&1; then
@@ -88,6 +88,16 @@ MAPSCRIPTS="$(echo "$OUTPUT" | grep '^mapscripts=')"
 DROPDOWNROWS="$(echo "$OUTPUT" | grep '^dropdownrows=')"
 ANSWERDRAFT="$(echo "$OUTPUT" | grep '^answerdraft=')"
 DROPOFFBEYOND="$(echo "$OUTPUT" | grep '^dropoffbeyond=')"
+OBJECTART="$(echo "$OUTPUT" | grep '^objectart=')"
+STUMPS="$(echo "$OUTPUT" | grep '^stumps=')"
+FORESTS="$(echo "$OUTPUT" | grep '^forests=')"
+BUILDSTUMP="$(echo "$OUTPUT" | grep '^buildstump=')"
+FELLEDPLACED="$(echo "$OUTPUT" | grep '^felledplaced=')"
+GROUNDLAYER="$(echo "$OUTPUT" | grep '^groundlayer=')"
+TCGROUND="$(echo "$OUTPUT" | grep '^tcground=')"
+HAWKS="$(echo "$OUTPUT" | grep '^hawks=')"
+CARCASS="$(echo "$OUTPUT" | grep '^carcass=')"
+CARCASSART="$(echo "$OUTPUT" | grep '^carcassart=')"
 COLOURS="$(echo "$OUTPUT" | grep '^colours=')"
 BUTTONS="$(echo "$OUTPUT" | grep '^buttons=')"
 SEARCH="$(echo "$OUTPUT" | grep '^search=')"
@@ -621,6 +631,70 @@ esac
 case "$DROPOFFBEYOND" in
     dropoffbeyond=ok*) echo "dropoffbeyond OK" ;;
     *) echo "DROPOFFBEYOND FAILED" >&2; echo "  $DROPOFFBEYOND" >&2; STATUS=1 ;;
+esac
+
+# Every object a game can hold draws something, for every owner, civilisation
+# and age.
+case "$OBJECTART" in
+    objectart=ok*) echo "objectart OK" ;;
+    *) echo "OBJECTART FAILED" >&2; echo "  $OBJECTART" >&2; STATUS=1 ;;
+esac
+
+# A used-up tree's stump lies for its decay time, its tile open.
+case "$STUMPS" in
+    stumps=ok*) echo "stumps OK" ;;
+    *) echo "STUMPS FAILED" >&2; echo "  $STUMPS" >&2; STATUS=1 ;;
+esac
+
+# Every random map's forest ground has its trees, and none stands where
+# nobody could walk once it is used up.
+case "$FORESTS" in
+    forests=ok*) echo "forests OK" ;;
+    *) echo "FORESTS FAILED" >&2; echo "  $FORESTS" >&2; STATUS=1 ;;
+esac
+
+# A house can be laid over a stump, clearing it, but not over a felled tree.
+case "$BUILDSTUMP" in
+    buildstump=ok*) echo "buildstump OK" ;;
+    *) echo "BUILDSTUMP FAILED" >&2; echo "  $BUILDSTUMP" >&2; STATUS=1 ;;
+esac
+
+# A tree placed as a scenario places it, felled, draws as the felled trunk.
+case "$FELLEDPLACED" in
+    felledplaced=ok*) echo "felledplaced OK" ;;
+    *) echo "FELLEDPLACED FAILED" >&2; echo "  $FELLEDPLACED" >&2; STATUS=1 ;;
+esac
+
+# Stumps and bodies lie on the ground, under who walks there.
+case "$GROUNDLAYER" in
+    groundlayer=ok*) echo "groundlayer OK" ;;
+    *) echo "GROUNDLAYER FAILED" >&2; echo "  $GROUNDLAYER" >&2; STATUS=1 ;;
+esac
+
+# A Town Center keeps units off its back alone; its open ground is walked, not
+# built on.
+case "$TCGROUND" in
+    tcground=ok*) echo "tcground OK" ;;
+    *) echo "TCGROUND FAILED" >&2; echo "  $TCGROUND" >&2; STATUS=1 ;;
+esac
+
+# A new map's hawks fly about it, up at their height, flapping and gliding.
+case "$HAWKS" in
+    hawks=ok*) echo "hawks OK" ;;
+    *) echo "HAWKS FAILED" >&2; echo "  $HAWKS" >&2; STATUS=1 ;;
+esac
+
+# A boar's carcass is shown as the boar it was, with the food it holds.
+case "$CARCASS" in
+    carcass=ok*) echo "carcass OK" ;;
+    *) echo "CARCASS FAILED" >&2; echo "  $CARCASS" >&2; STATUS=1 ;;
+esac
+
+# A carcass lies as the animal fell while it holds food, then leaves its
+# rotting remains for the dat's decay time.
+case "$CARCASSART" in
+    carcassart=ok*) echo "carcassart OK" ;;
+    *) echo "CARCASSART FAILED" >&2; echo "  $CARCASSART" >&2; STATUS=1 ;;
 esac
 
 # Villagers sent at a sheep kill it, take its food within the dat's range and

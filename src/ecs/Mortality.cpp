@@ -44,27 +44,19 @@ Core::PlayerId OwnerOf(const entt::registry& registry, entt::entity e) {
     return owner != nullptr ? owner->player_id : Core::PLAYER_GAIA;
 }
 
-// Replaces a unit that has finished dying with its dead unit.
-void LayDown(entt::registry& registry, entt::entity dead) {
-    const auto* identity = registry.try_get<Components::Identity>(dead);
-    const auto* at = registry.try_get<Components::Transform>(dead);
-    if (identity == nullptr || at == nullptr) return;
-    // The body is the dead unit of the table it played by.
-    const Core::PlayerId owner = Players::RulesPlayer(registry, dead);
-    const R::UnitRules* rules = Players::UnitOf(registry, owner, identity->unit_id);
-    if (rules == nullptr || rules->dead_unit < 0) return;
-    const R::UnitRules* remains = Players::UnitOf(registry, owner, rules->dead_unit);
-
+// A body of the dat's dead unit `dead_unit` at `at`, facing `heading`, in
+// `colour`'s colour, by `player`'s rules: its standing graphic, whose frames
+// play out over the dat's decay time as it rots, and gone after it.
+void LayBody(entt::registry& registry, Components::Vector2D at, uint8_t heading, Core::PlayerId colour,
+             Core::PlayerId player, int dead_unit) {
+    const R::UnitRules* remains = Players::UnitOf(registry, player, dead_unit);
     // The dead unit's standing graphic, from the rules -- which carry every
     // unit, dead ones included, where the art tables only carry the living.
-    auto& cfg = Core::ConfigManager::Get();
-    const R::UnitRules* drawn =
-        Players::UnitOf(registry, owner, Players::ArtOf(registry, owner, rules->dead_unit));
-    const auto art = cfg.GetGraphic(drawn != nullptr ? drawn->standing_graphic : -1);
+    const R::UnitRules* drawn = Players::UnitOf(registry, player, Players::ArtOf(registry, player, dead_unit));
+    const auto art = Core::ConfigManager::Get().GetGraphic(drawn != nullptr ? drawn->standing_graphic : -1);
     if (!art.Valid()) return;
-
     const entt::entity body = registry.create();
-    registry.emplace<Components::Transform>(body, at->position, at->position);
+    registry.emplace<Components::Transform>(body, at, at);
     Components::Sprite sprite{};
     sprite.slp_id = art.slp_id;
     sprite.is_file_sprite = true;
@@ -73,44 +65,89 @@ void LayDown(entt::registry& registry, entt::entity dead) {
     sprite.still = true;   // lies still, facing the way it fell
     sprite.width = 0;
     sprite.height = 0;
-    if (const auto* fell = registry.try_get<Components::Sprite>(dead)) {
-        sprite.heading = fell->heading;
-    }
+    sprite.heading = heading;
     registry.emplace<Components::Sprite>(body, sprite);
     // It lies in its owner's colour, a converted unit's new owner's.
-    registry.emplace<Components::Owner>(body, OwnerOf(registry, dead));
-
+    registry.emplace<Components::Owner>(body, colour);
     Components::Corpse corpse;
-    if (remains != nullptr) {
-        for (int i = 0; i < remains->storage_count; ++i) {
-            if (remains->storage[i].resource == kCorpseDecayTime) {
-                corpse.remaining_ms =
-                    (remains->storage[i].amount * Core::Fixed32(1000)).ToInt();
-            }
-        }
-    }
-
-    // An animal's food stays with its carcass, which can be gathered and rots.
-    if (const auto* food = registry.try_get<Components::Resource>(dead)) {
-        if (food->current_amount > 0) {
-            registry.emplace<Components::Resource>(body, *food);
-            registry.emplace<Components::Identity>(body, rules->dead_unit);
-            registry.emplace<Components::Selectable>(body,
-                Components::Selectable{.is_selected = false, .radius = 1, .priority = 0});
-            corpse.rot_per_second = rules->decay;
-            corpse.remaining_ms = 0;
-            // Whoever was after the animal goes on to the carcass.
-            auto workers = registry.view<Components::Worker>();
-            for (auto worker : workers) {
-                auto& job = workers.get<Components::Worker>(worker);
-                if (job.target_resource == dead) job.target_resource = body;
-            }
-        }
-    }
+    corpse.remains = dead_unit;
+    if (remains != nullptr) corpse.remaining_ms = corpse.lies_ms = DecayMs(*remains);
     registry.emplace<Components::Corpse>(body, corpse);
 }
 
+// Replaces a unit that has finished dying with its dead unit: a body, or, for
+// an animal still holding food, its carcass -- the animal as it fell, the last
+// frame of its dying graphic, holding the food -- until the food is gone
+// (Spent).
+void LayDown(entt::registry& registry, entt::entity dead) {
+    const auto* identity = registry.try_get<Components::Identity>(dead);
+    const auto* at = registry.try_get<Components::Transform>(dead);
+    if (identity == nullptr || at == nullptr) return;
+    // The body is the dead unit of the table it played by.
+    const Core::PlayerId owner = Players::RulesPlayer(registry, dead);
+    const R::UnitRules* rules = Players::UnitOf(registry, owner, identity->unit_id);
+    if (rules == nullptr || rules->dead_unit < 0) return;
+    const auto* fell = registry.try_get<Components::Sprite>(dead);
+    const uint8_t heading = fell != nullptr ? fell->heading : 0;
+
+    const auto* food = registry.try_get<Components::Resource>(dead);
+    const auto art = Core::ConfigManager::Get().GetGraphic(rules->dying_graphic);
+    if (food == nullptr || food->current_amount <= 0 || !art.Valid()) {
+        LayBody(registry, at->position, heading, OwnerOf(registry, dead), owner, rules->dead_unit);
+        return;
+    }
+
+    // An animal's food stays with its carcass, which can be gathered and rots.
+    const entt::entity body = registry.create();
+    registry.emplace<Components::Transform>(body, at->position, at->position);
+    Components::Sprite sprite{};
+    sprite.slp_id = art.slp_id;
+    sprite.is_file_sprite = true;
+    sprite.frames_per_angle = std::max(1, art.frame_count);
+    sprite.angles = std::max(1, art.angle_count);
+    sprite.current_frame = sprite.frames_per_angle - 1;
+    sprite.still = true;
+    sprite.width = 0;
+    sprite.height = 0;
+    sprite.heading = heading;
+    registry.emplace<Components::Sprite>(body, sprite);
+    registry.emplace<Components::Owner>(body, OwnerOf(registry, dead));
+    registry.emplace<Components::Resource>(body, *food);
+    registry.emplace<Components::Identity>(body, rules->dead_unit);
+    registry.emplace<Components::Selectable>(body,
+        Components::Selectable{.is_selected = false, .radius = 1, .priority = 0});
+    Components::Corpse corpse;
+    corpse.remains = rules->dead_unit;
+    corpse.rot_per_second = rules->decay;
+    corpse.was = identity->unit_id;
+    registry.emplace<Components::Corpse>(body, corpse);
+    // Whoever was after the animal goes on to the carcass.
+    auto workers = registry.view<Components::Worker>();
+    for (auto worker : workers) {
+        auto& job = workers.get<Components::Worker>(worker);
+        if (job.target_resource == dead) job.target_resource = body;
+    }
+}
+
 } // namespace
+
+int32_t DecayMs(const R::UnitRules& remains) {
+    for (int i = 0; i < remains.storage_count; ++i) {
+        if (remains.storage[i].resource == kCorpseDecayTime) {
+            return (remains.storage[i].amount * Core::Fixed32(1000)).ToInt();
+        }
+    }
+    return 0;
+}
+
+void Spent(entt::registry& registry, entt::entity carcass) {
+    const auto* corpse = registry.try_get<Components::Corpse>(carcass);
+    const auto* at = registry.try_get<Components::Transform>(carcass);
+    if (corpse == nullptr || at == nullptr || corpse->was < 0) return;
+    const auto* sprite = registry.try_get<Components::Sprite>(carcass);
+    const Core::PlayerId owner = OwnerOf(registry, carcass);
+    LayBody(registry, at->position, sprite != nullptr ? sprite->heading : 0, owner, owner, corpse->remains);
+}
 
 entt::entity PlayOnce(entt::registry& registry, int graphic, Components::Vector2D at) {
     auto& cfg = Core::ConfigManager::Get();
@@ -217,8 +254,18 @@ void Update(entt::registry& registry, Physics::Grid& /*grid*/, int32_t dt_ms) {
         }
         corpse.remaining_ms -= dt_ms;
         if (corpse.remaining_ms <= 0) gone.push_back(e);
+        // A body rots through its graphic's frames over the time it lies.
+        if (corpse.lies_ms > 0) {
+            if (auto* sprite = registry.try_get<Components::Sprite>(e)) {
+                const int64_t passed = std::max<int32_t>(0, corpse.lies_ms - corpse.remaining_ms);
+                sprite->current_frame = static_cast<int>(
+                    std::min<int64_t>(sprite->frames_per_angle - 1, passed * sprite->frames_per_angle / corpse.lies_ms));
+            }
+        }
     }
     for (auto e : gone) {
+        // A carcass whose food has rotted away leaves its remains.
+        Spent(registry, e);
         // A hunter still on its way to a rotted-away carcass has nothing to go to.
         auto workers = registry.view<Components::Worker>();
         for (auto worker : workers) {

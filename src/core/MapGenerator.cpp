@@ -401,6 +401,42 @@ void MapGenerator::SetUpLayers(Physics::Grid& grid) {
     grid.SetLayers(grounds, layer_of);
 }
 
+namespace {
+
+// Plants the tree its ground carries on each of `tiles` (the terrain's tree
+// unit), blocking the tile and holding the dat's wood, and notes it in
+// `trees`, a tree entity per tile.
+void PlantTrees(Physics::Grid& grid, entt::registry& registry, Random& rng,
+                const std::vector<std::pair<int, int>>& tiles, std::vector<entt::entity>& trees) {
+    auto& cfg = ConfigManager::Get();
+    for (const auto& [x, y] : tiles) {
+        const auto& art = cfg.GetTerrainArt(grid.GetTile(x, y).terrain);
+        if (art.tree_unit_id < 0) continue;
+        const ConfigManager::ObjectArt tree = cfg.GetObjectArt(art.tree_unit_id);
+        if (!tree.Valid()) continue;
+        const ConfigManager::GaiaObject* wood = cfg.GetGaiaObject(art.tree_unit_id);
+        grid.GetTileMut(x, y).has_tree = true;
+        grid.SetWalkable(x, y, false);
+        auto entity = registry.create();
+        registry.emplace<ECS::Components::Transform>(entity,
+            ECS::Components::Transform{
+                .position = {Core::Fixed32(x), Core::Fixed32(y)},
+                .previous_position = {Core::Fixed32(x), Core::Fixed32(y)}
+            });
+        MapGenerator::PlaceMapObject(registry, entity, tree, rng);
+        if (wood && wood->resource >= 0) {
+            registry.emplace<ECS::Components::Resource>(entity,
+                ECS::Components::Resource{
+                    .type = static_cast<ResourceType>(wood->resource),
+                    .current_amount = wood->amount,
+                });
+        }
+        trees[static_cast<size_t>(y) * static_cast<size_t>(grid.GetWidth()) + static_cast<size_t>(x)] = entity;
+    }
+}
+
+} // namespace
+
 std::vector<std::pair<int, int>> MapGenerator::GenerateFromScript(
         Physics::Grid& grid, entt::registry& registry, uint32_t seed,
         const RMSScript& script, const MapGenConfig& config) {
@@ -447,6 +483,21 @@ std::vector<std::pair<int, int>> MapGenerator::GenerateFromScript(
         player_starts = PlacePlayers(grid, config.num_players, config.base_margin);
     }
 
+    // The tree on each tile, while the ground is laid: a terrain laid over
+    // forest takes its trees away.
+    std::vector<entt::entity> trees(static_cast<size_t>(total_tiles), entt::entity{entt::null});
+    // The base terrain left between the lands, when it is forest, is planted
+    // like any forest laid later: Black Forest's.
+    if (cfg.GetTerrainArt(base_terrain).tree_unit_id >= 0) {
+        std::vector<std::pair<int, int>> base;
+        for (int y = 0; y < height; ++y) {
+            for (int x = 0; x < width; ++x) {
+                if (grid.GetTile(x, y).terrain == base_terrain) base.emplace_back(x, y);
+            }
+        }
+        PlantTrees(grid, registry, rng, base, trees);
+    }
+
     // --- Terrain ---------------------------------------------------------
     if (const RMSSection* terrain = script.GetSection("TERRAIN_GENERATION")) {
         for (const RMSCommand& command : terrain->commands) {
@@ -480,9 +531,8 @@ std::vector<std::pair<int, int>> MapGenerator::GenerateFromScript(
                     ? player_starts : std::vector<std::pair<int, int>>{};
             const int avoid_radius = avoid.empty() ? 0 : base_size + 4;
 
-            // Ground that carries an object on every tile -- forest -- needs
-            // the tiles it took, so the trees can be planted on them.
-            const auto& art = cfg.GetTerrainArt(target);
+            // The tiles it took: a forest's are planted, and a tree on one
+            // laid over earlier forest is gone.
             std::vector<std::pair<int, int>> painted;
 
             for (int c = 0; c < clumps; ++c) {
@@ -499,28 +549,16 @@ std::vector<std::pair<int, int>> MapGenerator::GenerateFromScript(
                 }
             }
 
-            if (art.tree_unit_id < 0) continue;
-            const ConfigManager::ObjectArt tree = cfg.GetObjectArt(art.tree_unit_id);
-            if (!tree.Valid()) continue;
-            const ConfigManager::GaiaObject* wood = cfg.GetGaiaObject(art.tree_unit_id);
-            for (const auto& tile : painted) {
-                grid.GetTileMut(tile.first, tile.second).has_tree = true;
-                grid.SetWalkable(tile.first, tile.second, false);
-                auto entity = registry.create();
-                registry.emplace<ECS::Components::Transform>(entity,
-                    ECS::Components::Transform{
-                        .position = {Core::Fixed32(tile.first), Core::Fixed32(tile.second)},
-                        .previous_position = {Core::Fixed32(tile.first), Core::Fixed32(tile.second)}
-                    });
-                PlaceObjectArt(registry, entity, tree, rng);
-                if (wood && wood->resource >= 0) {
-                    registry.emplace<ECS::Components::Resource>(entity,
-                        ECS::Components::Resource{
-                            .type = static_cast<ResourceType>(wood->resource),
-                            .current_amount = wood->amount,
-                        });
-                }
+            for (const auto& [x, y] : painted) {
+                entt::entity& old_tree =
+                    trees[static_cast<size_t>(y) * static_cast<size_t>(width) + static_cast<size_t>(x)];
+                if (old_tree == entt::null) continue;
+                registry.destroy(old_tree);
+                old_tree = entt::null;
+                grid.GetTileMut(x, y).has_tree = false;
+                grid.SetWalkable(x, y, true);
             }
+            PlantTrees(grid, registry, rng, painted, trees);
         }
     }
 

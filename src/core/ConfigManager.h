@@ -87,6 +87,12 @@ public:
         return graphic_info[static_cast<size_t>(graphic_id)];
     }
 
+    // A graphic's dat name, or an empty string.
+    std::string GetGraphicName(int graphic_id) const {
+        auto g = graphics_json.find(std::to_string(graphic_id));
+        return g == graphics_json.end() ? std::string{} : g->value("name", std::string{});
+    }
+
     // Look a graphic up by its dat name, e.g. "RTWC1NNG" for the Dark Age
     // Town Center body. Building art is named <unit><age><variant><civ>.
     GraphicInfo GetGraphicByName(const std::string& name) const {
@@ -588,6 +594,15 @@ public:
         for (auto civ = data["civ_arch"].begin();
              civ != data["civ_arch"].end(); ++civ) {
             civ_architecture[std::stoi(civ.key())] = civ.value().get<std::string>();
+        }
+        // Gaia's set, which the file leaves out: the letter its own unit
+        // table, the base one, names for the Lumber Camp, as each
+        // civilisation's set is found.
+        if (civ_architecture.find(0) == civ_architecture.end()) {
+            const std::string name = GetGraphicName(GetUnitGraphicById(GetUnitIdByName("SMIL"), "idle_graphic0").graphic_id);
+            if (!name.empty() && std::string("EFMW").find(name.back()) != std::string::npos) {
+                civ_architecture[0] = std::string(1, name.back());
+            }
         }
         for (auto unit = data["art"].begin(); unit != data["art"].end(); ++unit) {
             const int unit_id = std::stoi(unit.key());

@@ -61,6 +61,7 @@ units they act on by these, so a unit on patrol is simply one with a `Duty`:
 | `Trader` | a trade cart or cog has been set trading: its route and its load | `Trade` |
 | `RulesOf` | it has changed hands, and plays by its maker's table | `Allegiance` |
 | `Grazer` | an animal that grazes | `Animals` |
+| `Flier` | a bird on the wing: a hawk | `Animals` |
 | `Dying` | playing its death | `Mortality` |
 
 A unit inside a building or aboard a transport has no `Transform` at all,
@@ -414,17 +415,20 @@ The `Dying` unit plays its dying graphic once through (a second,
 lays down its **dead unit**, the one the dat names for it, by the table it
 played by:
 
-- **A body.** A still sprite of the dead unit's standing graphic, facing the
-  way the unit fell, that lies for the dead unit's corpse decay time (a figure
-  the dat stores among its resources) and is then gone. It lies in its owner's
-  colour: a converted unit's body is its new owner's, though its dead unit is
-  its maker's.
-- **A carcass.** An animal with food left keeps it: the carcass takes the
-  animal's `Resource`, the dead unit's `Identity` and a `Selectable`, so it
-  can be clicked and gathered. It loses food at the animal's decay rate each
-  second, carried as a fraction, and is gone when nothing is left. Any worker
-  that was after the animal now makes for the carcass; one still on its way to
-  a carcass that rots away has nothing to go to.
+- **A body.** The dead unit's standing graphic, facing the way the unit
+  fell, that lies for the dead unit's corpse decay time (a figure the dat
+  stores among its resources) and is then gone, rotting through the graphic's
+  frames over that time. It lies in its owner's colour: a converted unit's
+  body is its new owner's, though its dead unit is its maker's.
+- **A carcass.** An animal with food left keeps it: the carcass is the animal
+  as it fell, the last frame of its dying graphic, and takes the animal's
+  `Resource`, the dead unit's `Identity` and a `Selectable`, so it can be
+  clicked and gathered. It loses food at the animal's decay rate each second,
+  carried as a fraction. When nothing is left, gathered or rotted, its dead
+  unit lies in its place as a body (`Mortality::Spent`): a boar's or a deer's
+  for five minutes, a sheep's not at all, its decay time being none. Any
+  worker that was after the animal now makes for the carcass; one still on its
+  way to a carcass that rots away has nothing to go to.
 
 `Mortality::PlayOnce` uses the same `Dying` timer for graphics that play once
 and are gone: a building's fall in dust, a stone bursting where it lands.
@@ -457,7 +461,8 @@ stateDiagram-v2
     Herded --> Dying: killed
     Fighting --> Dying: killed
     Dying --> Carcass: dying graphic played
-    Carcass --> [*]: food gathered, or rotted away
+    Carcass --> Remains: food gathered, or rotted away
+    Remains --> [*]: the dat's decay time
 ```
 
 ### Grazing
@@ -481,6 +486,24 @@ sheep a player has taken stands where it is put.
 | `kFleeSights`, `kFleeMs` | 3, 6000 | prey runs three times its sight, and stops grazing for 6 s |
 | `kHerdCheckTicks` | 8 | how often a herdable looks round, staggered by entity |
 
+### Flying
+
+A unit whose rules have a Fly task, the hawk, is given a `Flier` on the same
+first look, and is drawn up at its height from then on: nine height units, each
+half a tile's height on the screen. Its graphic's shadow piece, of the dat's
+ground layers, stays on the ground under it. It never lands. It picks a point
+anywhere on the map, whole tiles from 1 to the side less one, from the world's
+seeded generator, and flies there along an ordinary route at the dat's speed;
+arrived, or with no way there, it picks the next. On the way it flaps (the
+task's moving graphic) for a spell of 5 to 14 whole seconds, then glides (its
+proceeding graphic) for another, by turns, and every new leg starts flapping.
+A bird in the air is in nobody's way: crowds do not make room for it.
+
+| Constant | Value | Meaning |
+|---|---|---|
+| `kFlightHeight` | 9 | a flier's height, in half tile heights |
+| `kLeastSpellS`, `kSpellSpreadS` | 5, 10 | a spell of flapping or gliding lasts 5 s plus up to 9 s more |
+
 ### Herding
 
 Every eighth tick (each herdable on its own tick, by its entity) a herdable
@@ -496,7 +519,10 @@ scout to find it, and an unguarded one changes hands when an enemy comes by.
 Prey struck by anyone runs (`Animals::Flee`): three times its line of sight
 straight away from the attacker, and where it fled to is its home from then on.
 A villager sent at a deer walks out as a hunter, sets its combat on the deer,
-kills it, and gathers from the carcass. A boar struck by its hunter turns on
+kills it, and gathers from the carcass. A carcass still holding food is the
+animal it was, as the original keeps it: the info panel names it and shows its
+icon and the food left (`UIRenderer::PanelUnit`, from the `Corpse`'s `was`),
+and the pointer over it gives the animal's hints, a sheep's the sheep's. A boar struck by its hunter turns on
 it, and a villager hunting a boar keeps at it when struck back. A wolf looks
 for villagers on its own slower clock, by difficulty (see
 [choosing a target](/engine/combat#choosing-a-target)). A shepherd kills its

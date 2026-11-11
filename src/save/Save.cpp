@@ -32,6 +32,7 @@
 #include "ecs/components/Duty.h"
 #include "ecs/components/Garrison.h"
 #include "ecs/components/Gate.h"
+#include "ecs/components/Flier.h"
 #include "ecs/components/Grazer.h"
 #include "ecs/components/Health.h"
 #include "ecs/components/Identity.h"
@@ -69,7 +70,7 @@ namespace C = ECS::Components;
 
 constexpr char kMagic[8] = {'A', 'O', 'K', 'C', 'S', 'A', 'V', 'E'};
 // The save format's version; a save of any other version is refused.
-constexpr uint32_t kVersion = 11;
+constexpr uint32_t kVersion = 12;
 
 // Plain data goes out as it lies in memory.
 template <typename T>
@@ -202,6 +203,7 @@ void EachComponent(F&& f) {
     f.template operator()<C::Duty>("Duty");
     f.template operator()<C::Dying>("Dying");
     f.template operator()<C::Felled>("Felled");
+    f.template operator()<C::Flier>("Flier");
     f.template operator()<C::Garrison>("Garrison");
     f.template operator()<C::Garrisoned>("Garrisoned");
     f.template operator()<C::Gate>("Gate");

@@ -1,6 +1,7 @@
 #pragma once
 #include <entt/entt.hpp>
 
+#include "core/Rules.h"
 #include "ecs/components/Transform.h"
 #include "physics/Grid.h"
 
@@ -10,9 +11,10 @@
 // A unit stops being part of anything at once -- it gives back its place in its
 // owner's population, cannot be selected, and fights and works no more --
 // and plays its dying graphic. Then it becomes the dat's dead unit: a body that
-// lies for the dat's corpse decay time, or, for an animal, a carcass holding
-// the food it had, which rots away at the animal's own rate. A hunter that was
-// after the animal goes on to the carcass.
+// lies for the dat's corpse decay time, rotting through its graphic's frames,
+// or, for an animal, a carcass holding the food it had -- the animal as it
+// fell -- which rots away at the animal's own rate and then leaves its body. A
+// hunter that was after the animal goes on to the carcass.
 namespace ECS::Mortality {
 
 // `victim` has no hit points left.
@@ -25,5 +27,14 @@ entt::entity PlayOnce(entt::registry& registry, int graphic, Components::Vector2
 
 // Advances the dying and the dead by one tick.
 void Update(entt::registry& registry, Physics::Grid& grid, int32_t dt_ms);
+
+// How long the dat lets remains lie before they are gone (their corpse decay
+// time), in milliseconds; 0 when they stay.
+int32_t DecayMs(const Core::Rules::UnitRules& remains);
+
+// A carcass whose food is gone, gathered or rotted: its dead unit lies in its
+// place as a body for the dat's decay time (a boar's or a deer's five
+// minutes; a sheep's none).
+void Spent(entt::registry& registry, entt::entity carcass);
 
 } // namespace ECS::Mortality

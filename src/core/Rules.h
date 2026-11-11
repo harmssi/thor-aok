@@ -148,6 +148,7 @@ namespace TaskAction {
 constexpr int Garrison = 3;
 constexpr int Gather = 5;
 constexpr int Graze = 6;          // wander about where it stands
+constexpr int Fly = 10;           // a hawk: fly from one point of the map to another, never landing
 constexpr int Combat = 7;
 constexpr int Build = 101;
 constexpr int Repair = 106;
@@ -173,6 +174,10 @@ struct Task {
     // Whether the unit looks for another target of this task when its own is
     // gone (the dat's AutoSearchTargets): every villager job's gather task.
     bool auto_search = false;
+    // The graphics of the task's moving and proceeding phases, dat graphics
+    // (-1: none): a hawk's Fly task flaps in the one and glides in the other.
+    int moving_graphic = -1;
+    int proceeding_graphic = -1;
 
     // Whether this task applies to a target of `unit_id` and `cls`.
     bool Targets(int unit_id, int cls) const {
@@ -200,6 +205,11 @@ struct Annex {
     Core::Fixed32 dy{};
 };
 
+// The dat's obstruction types a building's ground can have: none, and the
+// square of its footprint (what data that does not give it is read as).
+constexpr int kOpenGround = 0;
+constexpr int kSolidGround = 2;
+
 // One unit type's numbers -- everything a technology can change, and the rest
 // of what the simulation plays by. Plain values only, so a player's copy of
 // the whole table is a flat array.
@@ -219,6 +229,8 @@ struct UnitRules {
     // heroes rather than the units.
     bool hide_in_editor = false;
     bool hero = false;
+    // A building may be laid over it, which removes it: a stump, rubble.
+    bool can_be_built_on = false;
     int dead_unit = -1;
     int dying_graphic = -1;
     int standing_graphic = -1;
@@ -233,6 +245,9 @@ struct UnitRules {
     int hill_mode = 0;
     int fog_visibility = 0;
     int interaction = 0;
+    // How it stands in others' way, the dat's obstruction type: kOpenGround
+    // lets units through (a Town Center, a farm), anything else blocks them.
+    int obstruction = kSolidGround;
     int combat_level = 0;
     int minimap_mode = 0;
     int carry = 0;

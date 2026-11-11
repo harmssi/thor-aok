@@ -23,7 +23,17 @@ void Grid::Resize(int w, int h) {
 
 void Grid::SetWalkable(int x, int y, bool walkable) {
     if (!InBounds(x, y)) return;
-    tiles[static_cast<size_t>(y * width + x)].blocked = !walkable;
+    Tile& tile = tiles[static_cast<size_t>(y * width + x)];
+    tile.blocked = !walkable;
+    tile.walk_through = false;
+    Refresh(x, y);
+}
+
+void Grid::SetWalkThrough(int x, int y) {
+    if (!InBounds(x, y)) return;
+    Tile& tile = tiles[static_cast<size_t>(y * width + x)];
+    tile.blocked = true;
+    tile.walk_through = true;
     Refresh(x, y);
 }
 
@@ -120,7 +130,7 @@ bool Grid::GateOpensFor(int x, int y, Core::PlayerId player) const {
 
 uint8_t Grid::LayerBits(const Tile& tile) const {
     uint8_t bits = 0;
-    if (tile.blocked) return bits;
+    if (tile.blocked && !tile.walk_through) return bits;
     for (int l = 1; l < layer_count; ++l) {
         if (GroundPasses(static_cast<Layer>(l), tile.terrain)) bits |= static_cast<uint8_t>(1u << l);
     }
@@ -139,7 +149,7 @@ void Grid::StoreBits(Tile& tile, uint8_t bits) {
 void Grid::Refresh(int x, int y) {
     if (!InBounds(x, y)) return;
     Tile& tile = tiles[static_cast<size_t>(y * width + x)];
-    const bool walkable = !tile.blocked && LandPassable(tile.terrain);
+    const bool walkable = (!tile.blocked || tile.walk_through) && LandPassable(tile.terrain);
     if (walkable != tile.is_walkable) ++walk_revision[kLand];
     tile.is_walkable = walkable;
     StoreBits(tile, LayerBits(tile));
@@ -166,7 +176,7 @@ void Grid::SetTerrain(int x, int y, Core::TerrainType terrain) {
     Tile& tile = tiles[static_cast<size_t>(y * width + x)];
     if (tile.terrain == terrain) return;
     tile.terrain = terrain;
-    const bool walkable = !tile.blocked && LandPassable(terrain);
+    const bool walkable = (!tile.blocked || tile.walk_through) && LandPassable(terrain);
     if (walkable != tile.is_walkable) ++walk_revision[kLand];
     tile.is_walkable = walkable;
     StoreBits(tile, LayerBits(tile));

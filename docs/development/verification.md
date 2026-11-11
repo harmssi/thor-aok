@@ -90,6 +90,15 @@ the gate reads. The names below are those the gate prints.
 | `dropoff` | A villager sent to drop off: its whole load, part units included, and then it stands; only at its own finished building that takes it; the load banked on going into the Town Center, not a tower |
 | `dropoffbeyond` | A villager with a load and no way to any drop site stands with it, rather than looking for one every tick |
 | `felling` | A lumberjack's felling stroke with no wood cut, then the tree lying as its felled graphic, then wood cut from it |
+| `stumps` | A used-up tree's tile opens at once, and its stump lies for the dat's decay time, three minutes, then is gone |
+| `forests` | On every random map, every tile of ground that carries trees has its tree (Black Forest's base forest among them), and no tree stands where land units could not walk once it is used up |
+| `buildstump` | A house can be placed over a stump, and laying it clears the stump; none can be placed over a felled tree still holding wood |
+| `felledplaced` | A tree placed as a scenario or the editor places it draws as its standing graphic's pieces; felled, it draws as the felled trunk, no standing piece left |
+| `groundlayer` | What the dat draws on its ground layers, a stump or a body, lies under whatever walks there; a villager and a tree stand |
+| `tcground` | A Town Center keeps units off its back, the one piece the dat gives an obstruction; a villager sent onto the rest of its footprint gets there, and nothing else is built on any of it |
+| `hawks` | A new map's hawks fly about it, covering ground at the dat's speed, drawn up at their height, flapping and gliding by turns, never leaving the map |
+| `carcass` | A wild boar killed lies as a carcass the info panel shows as the boar it was, with its food, and the pointer over it gives the hunt's hints, not a forage bush's |
+| `carcassart` | A boar's carcass lies as the boar fell, the last frame of its dying graphic, while it holds food; then its remains lie for the dat's decay time, rotting through their frames; a sheep's carcass leaves none |
 | `herding`, `crowd`, `spread` | Villagers sent at a sheep kill it, take its food and bring it home, walking no further than they must; a crowd at one sheep works side by side, the rest standing by; villagers sent together to a point stand about it side by side |
 | `sequence`, `collapse` | Graphics run their dat sequences (a standing scout rests between plays of its idle); a destroyed building falls in its dying graphic over its rubble |
 | `shipangles`, `turning` | A ship shows the nearest of its graphic's sixteen angles, a soldier of eight; a ship or a trebuchet turns to its target an angle at a time before it shoots |
@@ -114,6 +123,7 @@ the gate reads. The names below are those the gate prints.
 | `garrison` | Entering and leaving, refusals, garrison arrows, healing, the town bell; the count inside told for our own only |
 | `garrisonfall` | A walled-in tower destroyed: its garrison stands on the ground the tower held |
 | `animals`, `duties`, `monks` | Herding, fleeing, grazing; patrol, follow, guard; conversion, facing whom they convert, healing, relics |
+| `objectart` | Every object the scenario editor offers or a scenario or campaign on the CD places draws something, put down through the scenario's own placement for the eight players and Gaia, in every civilisation and age; only what the CD holds no art for at all is let off |
 | `maps` | Islands, continents, beaches, cliffs and fish across several map scripts |
 | `connections` | A map script's connections: on Black Forest and Rivers, every start reaches every other by land, Town Centers stepped over |
 | `mapscripts` | Every map in the lobby's Map Type list is played from its own script, two-word names such as Black Forest included |

@@ -4,6 +4,7 @@
 
 #include "core/ConfigManager.h"
 #include "ecs/Fog.h"
+#include "ecs/systems/AnimationSystem.h"
 #include "ecs/components/Felled.h"
 #include "ecs/components/Identity.h"
 #include "ecs/components/Resource.h"
@@ -61,6 +62,9 @@ void Fell(entt::registry& registry, entt::entity tree) {
     const int shape = (Physics::TileOf(at.x) + Physics::TileOf(at.y)) % shapes;
     registry.emplace_or_replace<Components::Felled>(tree, Components::Felled{shape});
     if (!art.Valid()) return;
+    // A tree placed as a scenario places it draws as its standing graphic's
+    // pieces, the tree and its shadow: felled, it is the felled graphic's.
+    Systems::AnimationSystem::ResolvePieces(registry, tree, rules->dying_graphic);
     if (auto* sprite = registry.try_get<Components::Sprite>(tree)) {
         sprite->slp_id = art.slp_id;
         sprite->slp_frame = shape;

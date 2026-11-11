@@ -203,14 +203,22 @@ three ways:
 | `Crowded` | Units of its owner's side or Gaia's still stand on it after being told to step off | Waits |
 | `Begun` | Otherwise | Builds |
 
-Begun, the footprint is blocked on the grid and everyone on it steps to the
-nearest spot beside it (`Buildings::StepAside`); a farm's ground stays open,
-and nobody need step off it. Every other foundation not yet begun that
+Begun, the footprint is taken on the grid: nothing else is built on it. Units
+are kept off it, and everyone on it steps to the nearest spot beside it
+(`Buildings::StepAside`), unless the dat gives the building no obstruction. A
+Town Center has none: its pieces that have one, its back, keep units off their
+own squares, and the rest of its footprint is ground units walk
+(`Grid::SetWalkThrough`). A farm's ground stays open, and nobody need step off
+it. Every other foundation not yet begun that
 overlaps it, whoever's, is torn down with its price refunded in full. Two
 enemies can lay foundations on the same ground without either seeing the
 other's; the first to begin work keeps it.
 The first work on a Wonder also shows its ground to every player (see
 [Victory and diplomacy](/engine/victory)).
+
+Laying a building, foundation or finished, clears what lies on its ground that
+the dat lets a building be laid over: a stump, a body, rubble. A felled tree
+still holding wood keeps its tile, so nothing is placed over it.
 
 ## Builders
 

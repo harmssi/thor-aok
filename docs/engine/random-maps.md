@@ -230,7 +230,10 @@ Each clump starts from a random tile of the replaced terrain (24 tries) and
 grows by taking a random tile from its frontier, so it follows the shape of the
 ground it replaces. A terrain whose art carries a tree on every tile (a forest)
 has a tree planted on each tile it took, holding the wood the Gaia unit table
-gives that tree.
+gives that tree; so has the script's base terrain left between the lands when
+it is forest (Black Forest's), planted once the lands are laid. A terrain laid
+over forest takes the trees of the tiles it took away: Black Forest's clearings
+and the ponds in them have none.
 
 Painting a tile sets its terrain and whether it can be walked; the cell of the
 terrain's tiling pattern it draws follows from its place when it is drawn (see

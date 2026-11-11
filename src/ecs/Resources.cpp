@@ -5,8 +5,10 @@
 #include "ecs/Buildings.h"
 #include "ecs/Events.h"
 #include "ecs/Fog.h"
+#include "ecs/Mortality.h"
 #include "ecs/components/Building.h"
 #include "ecs/components/Identity.h"
+#include "ecs/components/Mortal.h"
 #include "ecs/components/Owner.h"
 #include "ecs/components/Sprite.h"
 #include "ecs/components/Transform.h"
@@ -32,6 +34,12 @@ void Exhaust(entt::registry& registry, Physics::Grid& grid, entt::entity resourc
 
     // Who does not see it go keeps it as it was.
     Fog::Going(registry, resource);
+    // A carcass gathered out leaves its body.
+    if (const auto* corpse = registry.try_get<Components::Corpse>(resource); corpse != nullptr && corpse->was >= 0) {
+        Mortality::Spent(registry, resource);
+        registry.destroy(resource);
+        return;
+    }
     if (const auto* at = registry.try_get<Components::Transform>(resource)) {
         const auto position = at->position;
         const int x = Physics::TileOf(position.x);
@@ -54,6 +62,14 @@ void Exhaust(entt::registry& registry, Physics::Grid& grid, entt::entity resourc
                 sprite.width = 0;
                 sprite.height = 0;
                 registry.emplace<Components::Sprite>(stump, std::move(sprite));
+                // It lies for the dat's decay time (a stump three minutes),
+                // then is gone.
+                const Core::Rules::UnitRules* stump_rules = Core::Rules::Unit(rules->dead_unit);
+                const int32_t lies = stump_rules != nullptr ? Mortality::DecayMs(*stump_rules) : 0;
+                if (lies > 0) {
+                    registry.emplace<Components::Corpse>(
+                        stump, Components::Corpse{.remaining_ms = lies, .remains = rules->dead_unit});
+                }
             }
         }
     }

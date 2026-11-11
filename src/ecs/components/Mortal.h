@@ -15,8 +15,15 @@ struct Dying {
 // it is gone.
 struct Corpse {
     int32_t remaining_ms = 0;          // a body: until it disappears
+    int32_t lies_ms = 0;               // a body: how long it lies in all, as it rots
     Core::Fixed32 rot_per_second{};    // a carcass: food lost each second
     Core::Fixed32 rot{};               // carried fraction of food not yet lost
+    // A carcass: the animal it was, as the original keeps it while it holds
+    // food -- what the panel names and shows (-1: a body).
+    int was = -1;
+    // A body or a stump: the dead unit lying here, whose rules say whether a
+    // building may be laid over it (-1: unknown).
+    int remains = -1;
 };
 
 } // namespace ECS::Components

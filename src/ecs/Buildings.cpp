@@ -103,6 +103,18 @@ void DestroyPieces(entt::registry& registry, entt::entity building) {
     for (auto piece : pieces) registry.destroy(piece);
 }
 
+// The unit a unit is an age variant of, by name: "CRCH2" is the Monastery's
+// ("CRCH"). -1 when its name carries no age or names no other unit.
+int AgeVariantOf(int unit_id) {
+    if (unit_id < 0) return -1;
+    auto& cfg = Core::ConfigManager::Get();
+    const std::string name = cfg.GetUnitDatName(unit_id);
+    size_t end = name.size();
+    while (end > 0 && name[end - 1] >= '0' && name[end - 1] <= '9') --end;
+    if (end == 0 || end == name.size()) return -1;
+    return cfg.GetUnitIdByName(name.substr(0, end));
+}
+
 // Places a finished building's art. Large buildings are composed of a main
 // unit plus annex units, each with its own graphic at an offset from the
 // origin -- a Town Center is four such pieces. Each piece becomes its own
@@ -127,8 +139,15 @@ void SpawnArt(entt::registry& registry, entt::entity building) {
     const Core::PlayerId maker = Players::RulesPlayer(registry, building);
     const int art_unit = Players::ArtOf(registry, maker, unit_id);
 
-    const std::vector<Core::ConfigManager::Annex>* pieces = cfg.GetAnnexes(art_unit);
-    if (pieces == nullptr) pieces = cfg.GetAnnexes(unit_id);
+    // The units whose art it may wear, in turn: its art slot, itself, and
+    // the unit each of those is an age variant of (CRCH2 and CRCH4, which
+    // scenarios place, are the Monastery's).
+    const int candidates[] = {art_unit, unit_id, AgeVariantOf(art_unit), AgeVariantOf(unit_id)};
+
+    const std::vector<Core::ConfigManager::Annex>* pieces = nullptr;
+    for (int candidate : candidates) {
+        if (pieces == nullptr && candidate >= 0) pieces = cfg.GetAnnexes(candidate);
+    }
 
     // Without a composition the unit is a single graphic on its own tile,
     // resolved by name: the dat's standing graphic for the Mill is a fragment,
@@ -136,12 +155,27 @@ void SpawnArt(entt::registry& registry, entt::entity building) {
     if (pieces == nullptr) {
         const int civ = CivOf(registry, maker);
         const int age = Techs::Age(registry, maker) + 1;
-        auto art = cfg.GetBuildingArt(art_unit, age, civ);
-        if (!art.Valid()) art = cfg.GetBuildingArt(unit_id, age, civ);
-        // A building standing before its own age -- a Regicide game's Castle
-        // in the Dark Age -- wears its own first age's art.
-        for (int later = age + 1; later <= 4 && !art.Valid(); ++later) {
-            art = cfg.GetBuildingArt(art_unit, later, civ);
+        Core::ConfigManager::BuildingArt art;
+        for (int candidate : candidates) {
+            if (candidate < 0) continue;
+            art = cfg.GetBuildingArt(candidate, age, civ);
+            // A building standing before its own age -- a Regicide game's
+            // Castle in the Dark Age -- wears its own first age's art.
+            for (int later = age + 1; later <= 4 && !art.Valid(); ++later) {
+                art = cfg.GetBuildingArt(candidate, later, civ);
+            }
+            if (art.Valid()) break;
+        }
+        // None by name -- a Wonder, each civilisation's own, or a scenario's
+        // pavilion -- is the maker's own standing graphic in the dat.
+        if (!art.Valid()) {
+            for (int candidate : {art_unit, unit_id}) {
+                const R::UnitRules* rules = Players::UnitOf(registry, maker, candidate);
+                if (rules != nullptr && cfg.GetGraphic(rules->standing_graphic).Valid()) {
+                    art.body = rules->standing_graphic;
+                    break;
+                }
+            }
         }
         const auto body = cfg.GetGraphic(art.body);
         if (!body.Valid()) return;
@@ -406,17 +440,34 @@ bool SameSide(const entt::registry& registry, Core::PlayerId a, Core::PlayerId b
     return a == b || Diplomacy::Allied(registry, a, b);
 }
 
-// A building takes its ground: its footprint blocked -- a farm's stays open --
-// and whoever stands on it stepping off.
+// A building takes its ground: nothing else is built on its footprint, and
+// units are kept off it -- off all of it, or, where the dat gives the
+// building no obstruction (a Town Center), off the pieces of it that have one
+// (its back). Whoever stands where units are kept off steps off.
 void Hold(entt::registry& registry, Physics::Grid& grid, entt::entity building) {
     auto& state = registry.get<Components::Building>(building);
     const int unit_id = registry.get<Components::Identity>(building).unit_id;
     const auto origin = registry.get<Components::Transform>(building).position;
     if (!registry.all_of<Components::Resource>(building)) {
-        ForEachFootprintTile(unit_id, Physics::TileOf(origin.x), Physics::TileOf(origin.y), [&](int x, int y) {
-            grid.SetWalkable(x, y, false);
-        });
-        StepAside(registry, grid, FootprintBounds(origin, unit_id));
+        const R::UnitRules* rules = R::Unit(unit_id);
+        if (rules == nullptr || rules->obstruction != R::kOpenGround) {
+            ForEachFootprintTile(unit_id, Physics::TileOf(origin.x), Physics::TileOf(origin.y),
+                                 [&](int x, int y) { grid.SetWalkable(x, y, false); });
+            StepAside(registry, grid, FootprintBounds(origin, unit_id));
+        } else {
+            ForEachFootprintTile(unit_id, Physics::TileOf(origin.x), Physics::TileOf(origin.y),
+                                 [&](int x, int y) { grid.SetWalkThrough(x, y); });
+            for (int i = 0; i < rules->annex_count; ++i) {
+                const R::Annex& annex = rules->annexes[i];
+                const R::UnitRules* piece = R::Unit(annex.unit);
+                if (piece == nullptr || piece->obstruction == R::kOpenGround) continue;
+                const Components::Vector2D off = FromDatAxes(annex.dx, annex.dy);
+                const Components::Vector2D at{origin.x + off.x, origin.y + off.y};
+                ForEachFootprintTile(annex.unit, Physics::TileOf(at.x), Physics::TileOf(at.y),
+                                     [&](int x, int y) { grid.SetWalkable(x, y, false); });
+                StepAside(registry, grid, FootprintBounds(at, annex.unit));
+            }
+        }
     }
     state.begun = true;
 }
@@ -684,6 +735,20 @@ entt::entity Place(entt::registry& registry, Physics::Grid& grid, int unit_id,
             }
             for (entt::entity e : dead) registry.destroy(e);
         }
+    }
+    // What lies on its ground that the dat lets a building be laid over --
+    // a stump, a body, rubble -- is gone; a carcass still holding food stays.
+    {
+        const auto ground = FootprintBounds(origin, placed);
+        std::vector<entt::entity> cleared;
+        auto lying = registry.view<const Components::Corpse, const Components::Transform>();
+        for (auto e : lying) {
+            const auto& corpse = lying.get<const Components::Corpse>(e);
+            const R::UnitRules* what = R::Unit(corpse.remains);
+            if (corpse.was >= 0 || what == nullptr || !what->can_be_built_on) continue;
+            if (ground.DistanceFrom(lying.get<const Components::Transform>(e).position).value == 0) cleared.push_back(e);
+        }
+        for (entt::entity e : cleared) registry.destroy(e);
     }
     if (complete) Hold(registry, grid, building);
 

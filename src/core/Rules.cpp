@@ -74,6 +74,7 @@ void ReadUnit(const nlohmann::json& v, UnitRules& u, UnitText& text) {
     u.rotation = Fx(v, "rotation");
     u.enabled = Int(v, "enabled", 0) != 0;
     u.hide_in_editor = Int(v, "hide_in_editor", 0) != 0;
+    u.can_be_built_on = Int(v, "can_be_built_on", 0) != 0;
     u.hero = Int(v, "hero", 0) != 0;
     u.dead_unit = Int(v, "dead_unit", -1);
     u.dying_graphic = Int(v, "dying_graphic", -1);
@@ -91,6 +92,7 @@ void ReadUnit(const nlohmann::json& v, UnitRules& u, UnitText& text) {
     u.hill_mode = Int(v, "hill_mode", 0);
     u.fog_visibility = Int(v, "fog_visibility", 0);
     u.interaction = Int(v, "interaction", 0);
+    u.obstruction = Int(v, "obstruction", kSolidGround);
     u.combat_level = Int(v, "combat_level", 0);
     u.minimap_mode = Int(v, "minimap_mode", 0);
     u.carry = Int(v, "carry", 0);
@@ -203,6 +205,10 @@ void ReadUnit(const nlohmann::json& v, UnitRules& u, UnitText& text) {
             if (t.size() > 6) task.resource_out = t[6].get<int>();
             if (t.size() > 7) task.carrying_graphic = t[7].get<int>();
             if (t.size() > 8) task.auto_search = t[8].get<int>() != 0;
+            if (t.size() > 10) {
+                task.moving_graphic = t[9].get<int>();
+                task.proceeding_graphic = t[10].get<int>();
+            }
         }
     }
 }

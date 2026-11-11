@@ -55,8 +55,12 @@ struct Tile {
     int elevation = 0;
     // Land units may be here: the ground allows it and nothing blocks it.
     bool is_walkable = true;
-    // Something stands here -- a tree, a mine, a building.
+    // Something stands here -- a tree, a mine, a building. Nothing else is
+    // built on it.
     bool blocked = false;
+    // What stands here lets units through it: a Town Center's open ground,
+    // which the dat gives no obstruction.
+    bool walk_through = false;
     bool has_tree = false;
     // The same for every other layer, a bit each (bit n: layer n). Land keeps
     // its own flag above, which the map generator writes directly.
@@ -89,6 +93,10 @@ public:
     // of it (true).
     // Whether land units may then walk it is also up to its ground.
     void SetWalkable(int x, int y, bool walkable);
+    // Marks something standing on the tile that units walk through: nothing
+    // is built there, but movers pass. SetWalkable clears it.
+    void SetWalkThrough(int x, int y);
+    // Whether something stands on the tile, whether or not units pass it.
     bool IsBlocked(int x, int y) const;
 
     // Which grounds land units may cross, by terrain: the dat's land-unit

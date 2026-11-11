@@ -97,7 +97,7 @@ bool CheckApproachPlanner();
 // Prints "building=".
 bool CheckConstruction();
 
-// A Town Centre trains villagers: price, refusals, the step out of the door,
+// A Town Center trains villagers: price, refusals, the step out of the door,
 // the population limit, and cancelling. Prints "production=".
 bool CheckProduction();
 
@@ -366,6 +366,38 @@ bool CheckAnswerDraft();
 // A villager with no way to any drop site stands with its load. Prints
 // "dropoffbeyond=".
 bool CheckDropoffBeyond();
+// Every object the editor offers or a CD scenario places draws something, for
+// every owner, civilisation and age. Prints "objectart=".
+bool CheckObjectArt();
+// A used-up tree's stump lies for the dat's decay time, its tile open.
+// Prints "stumps=".
+bool CheckStumps();
+// On every random map, every tile of ground that carries trees has its tree,
+// and no tree stands where land units could not walk once it is gone.
+// Prints "forests=".
+bool CheckForests();
+// A building can be laid over a stump, which it clears, but not over a
+// felled tree still holding wood. Prints "buildstump=".
+bool CheckBuildOverStump();
+// A tree placed as a scenario places it, felled, draws as the felled trunk.
+// Prints "felledplaced=".
+bool CheckFelledPlaced();
+// Stumps and bodies are drawn on the ground, under who walks there; villagers
+// and trees stand. Prints "groundlayer=".
+bool CheckGroundLayer();
+// A Town Center keeps units off its back alone; a villager sent onto the
+// rest gets there, and nothing is built on any of it. Prints "tcground=".
+bool CheckTownCenterGround();
+// A new map's hawks fly about it, drawn up at their height, flapping and
+// gliding by turns. Prints "hawks=".
+bool CheckHawks();
+// A boar's carcass is shown in the info panel as the boar it was, with its
+// food. Prints "carcass=".
+bool CheckCarcassPanel();
+// A boar's carcass lies as the boar fell while it holds food, then leaves its
+// remains, rotting, for the dat's decay time; a sheep's leaves none.
+// Prints "carcassart=".
+bool CheckCarcassArt();
 // A computer player's scout set on two wolves in its town: every swing it
 // begins at one wounds it. Prints "wolves=".
 bool CheckWolves();

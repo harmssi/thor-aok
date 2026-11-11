@@ -51,6 +51,10 @@ constexpr uint32_t kGroupDigits = 50403;
 // More than a building's art is ever set off its position, in tiles each
 // way (EntityRenderer::ArtOffset: half its footprint's lopsidedness).
 constexpr float kMostArtOffset = 4.0f;
+// The dat's graphic layers drawn on the ground, under whatever stands there,
+// and under a lifted sprite rather than with it: the shadows', the dead's and
+// the stumps' (10) and below.
+constexpr int kGroundLayer = 10;
 
 struct SelectionMark {
     int sx = 0, sy = 0;           // the pixel its outline is centred on
@@ -312,8 +316,10 @@ std::vector<SDL_Point>& RingPoints() {
 }
 
 // Whether the dat draws an SLP at ground level: every graphic using it on
-// layer 5 or under -- farms, rubble, cliffs, most shadows. Those layers are
-// drawn first, through the ground's fog regions.
+// the ground layers (kGroundLayer and under) -- farms, rubble, cliffs,
+// foundations, stumps, the dead, shadows. Those layers are drawn first,
+// through the ground's fog regions, so whatever stands or walks there is
+// drawn over them.
 bool GroundLevel(int slp_id) {
     static const std::vector<uint8_t> table = [] {
         std::vector<uint8_t> t;
@@ -325,7 +331,7 @@ bool GroundLevel(int slp_id) {
             const auto slp = static_cast<size_t>(info.slp_id);
             if (slp >= t.size()) t.resize(slp + 1, 0);
             // 1 ground, 2 standing; a standing use wins.
-            t[slp] = std::max<uint8_t>(t[slp], info.layer <= 5 ? 1 : 2);
+            t[slp] = std::max<uint8_t>(t[slp], info.layer <= kGroundLayer ? 1 : 2);
         }
         return t;
     }();
@@ -652,7 +658,11 @@ void EntityRenderer::DrawGroundLevel(ECS::Simulation& sim, Renderer& renderer, S
                     graphics.GetAtlas(static_cast<uint32_t>(piece.slp_id));
                 if (!piece_atlas) continue;
                 const HAL::ArtPlace art = graphics.Art(static_cast<uint32_t>(piece.slp_id), owner_player);
-                if (art.page == nullptr) continue;
+                // A piece that is all shadow -- a hawk's, under it on the
+                // ground -- draws in the shadow pass.
+                const HAL::ArtPlace shadow =
+                    art.page == nullptr ? graphics.Shadow(static_cast<uint32_t>(piece.slp_id)) : HAL::ArtPlace{};
+                if (art.page == nullptr && shadow.page == nullptr) continue;
                 // Of n facings the first n/2 + 1 are stored, clockwise from
                 // south, and the rest mirror them.
                 const int n = std::max(1, piece.angles);
@@ -667,6 +677,23 @@ void EntityRenderer::DrawGroundLevel(ECS::Simulation& sim, Renderer& renderer, S
                 if (frame < 0 || static_cast<size_t>(frame) >= piece_atlas->frames.size()) continue;
                 const HAL::GraphicFrame& gf = piece_atlas->frames[static_cast<size_t>(frame)];
                 if (gf.rect.w <= 0) continue;
+                // Lifted, a flier's pieces of the dat's ground layers -- its
+                // shadow -- stay on the ground under it.
+                const bool on_ground = piece.bias / ECS::Components::SpritePieces::kMax <= kGroundLayer;
+                const int lift = on_ground ? 0 : sprite.lift_px;
+                if (art.page == nullptr) {
+                    RenderEntry cast = e;
+                    const int ax = flip ? (gf.rect.w - gf.hotspot_x) : gf.hotspot_x;
+                    cast.shadow_tex = shadow.PageOf(gf.rect);
+                    cast.shadow_src = shadow.On(gf.rect);
+                    cast.shadow_flip = flip;
+                    cast.shadow_dest.x = sx + static_cast<float>(piece.offset_x - ax);
+                    cast.shadow_dest.y = sy + static_cast<float>(piece.offset_y - gf.hotspot_y - lift);
+                    cast.shadow_dest.w = static_cast<float>(gf.rect.w);
+                    cast.shadow_dest.h = static_cast<float>(gf.rect.h);
+                    entries.push_back(cast);
+                    continue;
+                }
                 RenderEntry part = e;
                 part.sort_bias = sprite.sort_bias + piece.bias;
                 part.is_selected = first && e.is_selected;
@@ -681,8 +708,7 @@ void EntityRenderer::DrawGroundLevel(ECS::Simulation& sim, Renderer& renderer, S
                 part.flip_h = flip;
                 const int anchor_x = flip ? (gf.rect.w - gf.hotspot_x) : gf.hotspot_x;
                 part.dest.x = sx + static_cast<float>(piece.offset_x - anchor_x);
-                part.dest.y = sy + static_cast<float>(piece.offset_y - gf.hotspot_y) -
-                              static_cast<float>(sprite.lift_px);
+                part.dest.y = sy + static_cast<float>(piece.offset_y - gf.hotspot_y - lift);
                 part.dest.w = static_cast<float>(gf.rect.w);
                 part.dest.h = static_cast<float>(gf.rect.h);
                 part.outline_player = owner_player;
@@ -802,9 +828,14 @@ void EntityRenderer::DrawGroundLevel(ECS::Simulation& sim, Renderer& renderer, S
                                     ? static_cast<size_t>(sprite.slp_frame) : 0;
                     const HAL::GraphicFrame& sgf = sh_atlas->frames[sf];
                     if (sgf.rect.w > 0) {
+                        // A graphic that is its own shadow -- a flag -- casts
+                        // it mirrored with its frame.
+                        const bool own = sprite.shadow_slp == sprite.slp_id;
+                        e.shadow_flip = own && e.flip_h;
                         e.shadow_tex = shadow.PageOf(sgf.rect);
                         e.shadow_src = shadow.On(sgf.rect);
-                        e.shadow_dest.x = sx - static_cast<float>(sgf.hotspot_x);
+                        e.shadow_dest.x = sx - static_cast<float>(e.shadow_flip ? sgf.rect.w - sgf.hotspot_x
+                                                                                 : sgf.hotspot_x);
                         e.shadow_dest.y = sy - static_cast<float>(sgf.hotspot_y);
                         e.shadow_dest.w = static_cast<float>(sgf.rect.w);
                         e.shadow_dest.h = static_cast<float>(sgf.rect.h);
@@ -1117,6 +1148,8 @@ void EntityRenderer::DrawGroundLevel(ECS::Simulation& sim, Renderer& renderer, S
 }
 
 int EntityRenderer::OutlinesDrawn() { return g_outlines_drawn; }
+
+bool EntityRenderer::OnGround(int slp_id) { return GroundLevel(slp_id); }
 
 void EntityRenderer::DrawMarks(SDL_Renderer* sdl_r, int sx, int sy, float rx, float ry, bool round,
                                int hp, int max_hp) {

@@ -95,8 +95,8 @@ bool CheckConstruction() {
             bool clear = true;
             for (int oy = -kSiteHalf; oy <= kSiteHalf && clear; ++oy) {
                 for (int ox = -kSiteHalf; ox <= kSiteHalf; ++ox) {
-                    if (!build_grid.IsWalkable(site_x + radius + ox,
-                                               site_y + oy)) {
+                    if (!build_grid.IsWalkable(site_x + radius + ox, site_y + oy) ||
+                        build_grid.IsBlocked(site_x + radius + ox, site_y + oy)) {
                         clear = false;
                         break;
                     }
@@ -367,8 +367,8 @@ bool CheckConstruction() {
             verdict = "never finished";
         } else if (!reg.all_of<ECS::Components::Sprite>(house)) {
             verdict = "finished with no art";
-        } else if (build_grid.IsWalkable(site_x, site_y)) {
-            verdict = "finished but does not block its ground";
+        } else if (!build_grid.IsBlocked(site_x, site_y)) {
+            verdict = "finished but does not take its ground";
         } else {
             // How close the builder ended up standing, and how many
             // villagers actually joined in.
@@ -438,7 +438,7 @@ bool CheckConstruction() {
                 headless.Update(16);
                 if (reg.valid(house)) {
                     verdict = "delete left the building standing";
-                } else if (!build_grid.IsWalkable(site_x, site_y)) {
+                } else if (!build_grid.IsWalkable(site_x, site_y) || build_grid.IsBlocked(site_x, site_y)) {
                     verdict = "delete left the ground blocked";
                 } else {
                     // Rubble: the dat names a wreck unit per building,

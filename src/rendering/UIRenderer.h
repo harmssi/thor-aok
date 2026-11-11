@@ -187,6 +187,10 @@ public:
     // for one of the viewer's own that holds any, not an ally's or enemy's.
     static bool ShowsGarrison(const entt::registry& registry, entt::entity selected);
 
+    // The dat unit the info panel describes `selected` as: a villager at work
+    // its job's unit, a carcass still holding food the animal it was.
+    static int PanelUnit(const entt::registry& registry, entt::entity selected);
+
     // What the rollover help says over a command button, its hotkey last.
     static std::string CommandHelp(ECS::Simulation& sim, const Command& command);
     // The rollover help's box in a win_w x win_h frame, holding `lines` lines:
@@ -270,6 +274,8 @@ public:
     // A line of help for the lower-left corner, set by whoever knows what the
     // cursor is over in the world; cleared every frame.
     static void SetWorldHint(int string_id);
+    // The hint the pointer's place in the world set this frame (-1: none).
+    static int WorldHint();
 
     // A top bar button was clicked: the screen it opens is the screens'
     // business, which collects the request here. -1 when there is none.

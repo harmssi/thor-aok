@@ -3,7 +3,9 @@
 Trees, buildings and missiles each have a separate shadow graphic whose frames
 are made entirely of SLP shadow-command pixels (cmd 0x0B). A graphic named
 "<base>N<civ>" or "<base>NN" has its shadow at the same name with the part
-marker replaced by '0': FOAK_NN -> FOAK_N0, RTWC1NNG -> RTWC1N0G.
+marker replaced by '0': FOAK_NN -> FOAK_N0, RTWC1NNG -> RTWC1N0G. A graphic
+whose own frames hold shadow-command pixels beside its art (a flag) is its
+own shadow graphic.
 
 Reads the given graphics.drs and assets/extracted_data/graphics.json.
 
@@ -47,8 +49,10 @@ def main():
     graphics = json.load(open(GRAPHICS_JSON, encoding='utf-8'))
     by_name = {v['name']: v for v in graphics.values() if v.get('name')}
 
-    # Pass 1: find every SLP that contains shadow pixels.
+    # Pass 1: find every SLP that contains shadow pixels, and those that
+    # hold art beside them.
     shadow_slps = set()
+    with_art = set()
     for slp_id in sorted(entries):
         base, _size = entries[slp_id]
         try:
@@ -57,12 +61,13 @@ def main():
             continue
         for hdr in headers:
             try:
-                _idx, _a, _pc, shadow, _ol = slp.decode_frame(blob, base, hdr)
+                _idx, alpha, _pc, shadow, _ol = slp.decode_frame(blob, base, hdr)
             except slp.SlpDecodeError:
                 continue
             if any(shadow):
                 shadow_slps.add(slp_id)
-                break
+            if any(alpha):
+                with_art.add(slp_id)
 
     # Pass 2: map each main graphic onto its shadow graphic by name.
     mapping = {}
@@ -75,6 +80,12 @@ def main():
             if other and other.get('slp_id', -1) in shadow_slps:
                 mapping[str(slp_id)] = other['slp_id']
                 break
+
+    # Pass 3: art with its own shadow pixels casts them itself.
+    for name, entry in by_name.items():
+        slp_id = entry.get('slp_id', -1)
+        if slp_id in shadow_slps and slp_id in with_art and str(slp_id) not in mapping:
+            mapping[str(slp_id)] = slp_id
 
     with open(SHADOW_MAP, 'w', encoding='utf-8', newline='\n') as fh:
         json.dump(mapping, fh, separators=(',', ':'), sort_keys=True)
