@@ -1363,6 +1363,7 @@ GameEnd RunGame(HAL::Window& window, Rendering::Renderer& renderer, Core::GameSe
             }
             Core::InputManager::Get().ProcessEvent(event, *sim, renderer);
         }
+        if (session.role == Net::Role::Offline) speed_percent = Thor::Speed(speed_percent);   // the deck's faster/slower
         {
             SDL_Event down, up;
             if (ScriptedClick(down, up)) {

@@ -62,8 +62,14 @@ The game plays The Age of Kings' rules from The Conquerors' data: the 13 origina
 | **Dual screen** | An Android `Presentation` on display 4 (`FLAG_NOT_FOCUSABLE`). Without a second screen, or with the intent extra `single=true`, the original interface stays on the top screen. |
 | **Engine-faithful** | Every deck action goes through the engine's own panel code (`src/thor/Thor.cpp`): a tile runs the command button's click, the mini-map centres the view like a mini-map click, the menu is the top bar's menu button. |
 | **Commands** | Tap a tile = press the button (train, research, build menu, stop, bell, …). Long-press = the button's help. Placing a building: pick it on the deck, then tap the spot on the top screen. **Delete** asks first: tap it again within 3 seconds. |
+| **Game look (0.3.0)** | The deck is drawn with the game's own interface art from your files: the top bar with its stockpile slots, the parchment and the stone of your civilisation. |
+| **Control groups** | I to IV: hold a button to store the selection, tap to pick the group, tap again to look at it. The same groups as the D-pad's. |
+| **Go to** | A page with your buildings (Town Center, Barracks, Archery Range, Stable, Siege Workshop, Blacksmith, Market, Monastery, University, Castle, Dock, Mill, camps): a tap selects the next one and looks at it. |
+| **Game** | Objectives, tech tree, statistics, game time, menu. Beside the groups: find the selection, flare, game speed. Beside the mini-map: its normal, combat and economic modes and the last alert. |
 | **Mini-map** | Drawn by the engine's mini-map code (terrain, fog, units) with the view frame. |
 | **Languages** | Deck and launcher in English, Deutsch, Español, Français. The game's own text comes from your HD files (English). |
+
+![The deck of 0.3.0](thor/screenshots/deck-0.3.0.jpg)
 
 ## Sticks and buttons (0.2.0)
 

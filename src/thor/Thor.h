@@ -30,7 +30,22 @@ enum Command : int {
     kDelete = 9,
     kObjectives = 10,
     kTechTree = 11,
+    kGoTo = 12,         // a = entry of the go-to list (the snapshot's), the next of those buildings
+    kGroupSelect = 13,  // a = control group 1..4
+    kGroupAssign = 14,  // a = control group 1..4, from the selection
+    kSpeed = 15,        // a = 1 faster, -1 slower
+    kGame = 16,         // a = GameItem
 };
+
+// kGame's items.
+enum GameItem : int {
+    kLastNotification = 0, kGoToSelected = 1, kFlare = 2, kMinimapNormal = 3, kMinimapCombat = 4,
+    kMinimapEconomic = 5, kStatistics = 6, kClock = 7,
+};
+
+// The game's speed, percent: given what it is, returns what the deck has asked
+// it to be since (the main loop's, once a frame).
+int Speed(int percent);
 
 // A command for the next frame, from the deck or from the controller (hal/Pad).
 void Push(int type, int a = 0, int b = 0);

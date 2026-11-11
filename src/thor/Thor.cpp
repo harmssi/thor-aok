@@ -8,11 +8,16 @@
 
 #include "core/CommandQueue.h"
 #include "core/ConfigManager.h"
+#include "core/Hotkeys.h"
 #include "core/InputManager.h"
 #include "core/IsometricMath.h"
 #include "core/Rules.h"
 #include "core/Strings.h"
 #include "ecs/Players.h"
+#include "ecs/components/Building.h"
+#include "ecs/components/Identity.h"
+#include "ecs/components/Owner.h"
+#include "ecs/components/Selectable.h"
 #include "ecs/Population.h"
 #include "ecs/Simulation.h"
 #include "ecs/Techs.h"
@@ -40,6 +45,13 @@ struct ThorAccess {
         in.GoToBuilding(sim, r, name);
     }
     static void LookAt(InputManager& in, Rendering::Renderer& r, float wx, float wy) { in.LookAt(r, wx, wy); }
+    static void Game(InputManager& in, ECS::Simulation& sim, Rendering::Renderer& r, int item) {
+        in.GameCommand(item, sim, r);
+    }
+    static void Group(InputManager& in, ECS::Simulation& sim, Rendering::Renderer& r, int group, bool assign) {
+        if (assign) in.AssignGroup(sim, group);
+        else in.SelectGroup(sim, group, false, r);
+    }
 };
 } // namespace Core
 
@@ -55,8 +67,16 @@ std::atomic<bool> g_dual{false};
 enum Header : int {
     kVersion, kInGame, kWood, kFood, kGold, kStone, kPop, kPopCap, kAge, kFlags,
     kSelected, kHp, kMaxHp, kSelSlp, kSelFrame, kSelUnit, kQueueDone, kQueueTotal,
-    kCommands, kQueue, kMapSerial, kMapWidth, kMapHeight, kView, kHeader = kView + 8,
+    kCommands, kQueue, kMapSerial, kMapWidth, kMapHeight, kView,
+    kCiv = kView + 8, kSpeedPercent, kGroups, kGoTos = kGroups + 4, kHeader,
 };
+// The buildings the deck's go-to page offers, by their dat names (InputManager::GoToBuilding's).
+constexpr const char* kGoToNames[] = {
+    "Town Center", "Barracks", "Archery Range", "Stable", "Siege Workshop", "Blacksmith", "Market", "Monastery",
+    "University", "Castle", "Dock", "Mill", "Lumber Camp", "Mining Camp",
+};
+constexpr int kGoToCount = static_cast<int>(sizeof(kGoToNames) / sizeof(kGoToNames[0]));
+std::atomic<int> g_speed{100}, g_speed_step{0};
 constexpr int kCommandInts = 8;   // slot, kind, slp, frame, enabled, affordable, label, name string
 constexpr int kQueueInts = 5;     // slot, id, count, slp, frame
 constexpr int kFlagPlacing = 1, kFlagAgeResearching = 2;
@@ -72,6 +92,7 @@ struct Shared {
     std::string age, next_age, name;
     std::vector<std::string> help;       // each command's rollover help, by index
     std::vector<std::string> labels;     // each command's name for its tile, by index
+    std::vector<std::string> go_to = std::vector<std::string>(kGoToCount);   // each go-to building's name
     struct Pending { int type, a, b; };
     std::vector<Pending> commands;
 };
@@ -209,6 +230,23 @@ void RunCommands(ECS::Simulation& sim, Rendering::Renderer& renderer, int win_w,
                 Core::CommandQueue::Get().PushCommand(Core::CancelTrainCommand{building, c.a, me});
             }
             break;
+        case kGoTo:
+            if (c.a >= 0 && c.a < kGoToCount) Core::ThorAccess::GoTo(input, sim, renderer, kGoToNames[c.a]);
+            break;
+        case kGroupSelect:
+        case kGroupAssign:
+            if (c.a >= 1 && c.a <= 4) Core::ThorAccess::Group(input, sim, renderer, c.a, c.type == kGroupAssign);
+            break;
+        case kSpeed: g_speed_step.store(c.a > 0 ? 1 : -1); break;
+        case kGame: {
+            namespace HK = Core::Hotkeys;
+            static const int items[] = {HK::kLastNotification, HK::kGoToSelected, HK::kFlare, HK::kMinimapNormal,
+                                        HK::kMinimapCombat, HK::kMinimapEconomic, HK::kStatistics, HK::kGameTime};
+            if (c.a >= 0 && c.a < static_cast<int>(sizeof(items) / sizeof(items[0]))) {
+                Core::ThorAccess::Game(input, sim, renderer, items[c.a]);
+            }
+            break;
+        }
         case kDelete: {
             UI::Command remove;
             remove.kind = UI::CommandKind::Delete;
@@ -224,6 +262,14 @@ void RunCommands(ECS::Simulation& sim, Rendering::Renderer& renderer, int win_w,
 
 bool Dual() { return g_dual.load(std::memory_order_relaxed); }
 void SetDual(bool on) { g_dual.store(on); }
+
+int Speed(int percent) {
+    const int step = g_speed_step.exchange(0);
+    if (step > 0) percent = percent >= 150 ? 200 : 150;
+    if (step < 0) percent = percent <= 150 ? 100 : 150;
+    g_speed.store(percent);
+    return percent;
+}
 
 void Push(int type, int a, int b) {
     std::lock_guard<std::mutex> hold(S().lock);
@@ -258,6 +304,7 @@ void Frame(ECS::Simulation& sim, Rendering::Renderer& renderer, SDL_Renderer* sd
         player->techs[static_cast<size_t>(next_age)].state == ECS::Players::TechState::Researching) {
         snap[kFlags] |= kFlagAgeResearching;
     }
+    std::vector<int> go_to_ints;
     const UI::Inspected seen = UI::Inspect(sim);
     snap[kSelected] = seen.selected;
     snap[kHp] = seen.hp;
@@ -290,6 +337,47 @@ void Frame(ECS::Simulation& sim, Rendering::Renderer& renderer, SDL_Renderer* sd
         snap.insert(snap.end(), at, at + kQueueInts);
     }
 
+    snap[kCiv] = player != nullptr && player->civ >= 1 ? player->civ : 1;
+    snap[kSpeedPercent] = g_speed.load();
+    // The control groups' sizes, and the player's buildings of the go-to list.
+    {
+        auto units = registry.view<ECS::Components::Selectable, ECS::Components::Owner>();
+        for (auto e : units) {
+            const int group = units.get<ECS::Components::Selectable>(e).group;
+            if (group >= 1 && group <= 4 && units.get<ECS::Components::Owner>(e).player_id == me) ++snap[kGroups + group - 1];
+        }
+    }
+    std::vector<std::string> go_to(kGoToCount);
+    {
+        auto& cfg = Core::ConfigManager::Get();
+        int count[kGoToCount] = {}, unit_of[kGoToCount] = {};
+        auto buildings = registry.view<ECS::Components::Building, ECS::Components::Identity, ECS::Components::Owner>();
+        for (auto e : buildings) {
+            if (buildings.get<ECS::Components::Owner>(e).player_id != me) continue;
+            const int unit_id = buildings.get<ECS::Components::Identity>(e).unit_id;
+            const auto* ui = cfg.GetUnitInterface(unit_id);
+            if (ui == nullptr) continue;
+            for (int i = 0; i < kGoToCount; ++i) {
+                if (ui->name != kGoToNames[i]) continue;
+                ++count[i];
+                unit_of[i] = unit_id;
+                break;
+            }
+        }
+        for (int i = 0; i < kGoToCount; ++i) {
+            if (count[i] == 0) continue;
+            ++snap[kGoTos];
+            go_to[static_cast<size_t>(i)] = cfg.GetUnitName(unit_of[i]);
+        }
+        // Written after the queue, below; kept here until then.
+        for (int i = 0; i < kGoToCount; ++i) {
+            if (count[i] == 0) continue;
+            const auto* ui = cfg.GetUnitInterface(unit_of[i]);
+            go_to_ints.insert(go_to_ints.end(), {i, count[i], static_cast<int>(cfg.BuildingIconSlp()), ui->icon});
+        }
+    }
+    snap.insert(snap.end(), go_to_ints.begin(), go_to_ints.end());
+
     snap[kMapSerial] = M().serial;
     snap[kMapWidth] = kMapW;
     snap[kMapHeight] = kMapH;
@@ -319,6 +407,7 @@ void Frame(ECS::Simulation& sim, Rendering::Renderer& renderer, SDL_Renderer* sd
     s.name = seen.name;
     if (fresh_help) s.help.swap(help);
     s.labels.swap(labels);
+    s.go_to.swap(go_to);
 }
 
 } // namespace Thor
@@ -396,6 +485,7 @@ JNIEXPORT jstring JNICALL Java_org_openaok_game_ThorBridge_text(JNIEnv* env, jcl
         else if (which == 2) words = s.name;
         else if (which == 3 && id >= 0 && id < static_cast<jint>(s.help.size())) words = s.help[id];
         else if (which == 5 && id >= 0 && id < static_cast<jint>(s.labels.size())) words = s.labels[id];
+        else if (which == 6 && id >= 0 && id < static_cast<jint>(s.go_to.size())) words = s.go_to[id];
     }
     if (which == 4 && id >= 0) words = Core::Strings::Get(id);
     return env->NewStringUTF(words.c_str());
