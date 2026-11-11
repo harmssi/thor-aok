@@ -4,7 +4,7 @@
 
 > Not affiliated with, endorsed by or sponsored by Microsoft. No game data included: you need your own copy of **Age of Empires II HD** (Steam).
 
-▶ **[Watch the install guide](https://youtu.be/cT8PKuzvq-g)** · **[Showcase video](https://youtu.be/a84hUf1OQok)** · **[30-second short](https://youtube.com/shorts/LNoEQ6FEUD0)**
+▶ **[Update video: 0.2.0 + 0.3.0](https://youtu.be/nONaSOl06fk)** · **[Watch the install guide](https://youtu.be/cT8PKuzvq-g)** · **[Showcase video](https://youtu.be/a84hUf1OQok)** · **[30-second short](https://youtube.com/shorts/LNoEQ6FEUD0)**
 
 | Town Center selected (top + bottom screen) | Build menu on the deck |
 |---|---|
