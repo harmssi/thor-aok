@@ -4,6 +4,14 @@
 
 > Not affiliated with, endorsed by or sponsored by Microsoft. No game data included: you need your own copy of **Age of Empires II HD** (Steam).
 
+▶ **[Watch the install guide](https://youtu.be/cT8PKuzvq-g)** · **[Showcase video](https://youtu.be/a84hUf1OQok)** · **[30-second short](https://youtube.com/shorts/LNoEQ6FEUD0)**
+
+| Town Center selected (top + bottom screen) | Build menu on the deck |
+|---|---|
+| ![Arabia start village on the top screen, command deck with the Town Center and its queue on the bottom screen](thor/screenshots/ingame-towncenter.jpg) | ![Villager selected, build menu with House, Mill, Mining Camp, Lumber Camp and Dock on the deck](thor/screenshots/deck-build-menu.jpg) |
+
+<sub>Real screenshots from an AYN Thor (deck language follows the system language, German here).</sub>
+
 All Thor ports: [toravo.de/en/thor](https://toravo.de/en/thor/) · Made a video about this? Open an issue and I'll link it here.
 
 ## Quick start
@@ -21,6 +29,8 @@ All Thor ports: [toravo.de/en/thor](https://toravo.de/en/thor/) · Made a video 
 5. **Start Thor AoK**, tap **Choose data folder**, open `OpenAoK-data`, **Use this folder → Allow**. The app checks every file against the manifest and copies it in; after that it starts straight away (**Play**). The folder on the card can be deleted afterwards.
 
 **Permissions:** none to grant. The import uses Android's folder picker.
+
+If it works for you, a ⭐ on GitHub helps – and [subscribing on YouTube](https://www.youtube.com/@toravomusic?sub_confirmation=1) helps me bring more ports to the Thor.
 
 ---
 
